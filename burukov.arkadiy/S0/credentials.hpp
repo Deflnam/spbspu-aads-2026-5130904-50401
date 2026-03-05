@@ -1,9 +1,11 @@
 #ifndef CREDENTIALS_HPP
 #define CREDENTIALS_HPP
-#include<iosfwd>
+
+#include <iosfwd>
 
 namespace burukov
 {
-  std::ostream & out_credentials(std::ostream& out);
+  std::ostream& out_credentials(std::ostream& out);
 }
+
 #endif

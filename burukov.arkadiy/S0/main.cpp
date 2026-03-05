@@ -3,5 +3,5 @@
 
 int main()
 {
-    burukov::out_credentials(std::cout) << '\n';
+  burukov::out_credentials(std::cout) << '\n';
 }
