@@ -35,16 +35,16 @@ namespace burukov
       in.clear();
       pair_t p;
       p.first = name;
-      p.second = nums;
+      p.second = std::move(nums);
       if (!seqsHasTail)
       {
-        seqs.pushFront(p);
+        seqs.pushFront(std::move(p));
         seqsTail = seqs.begin();
         seqsHasTail = true;
       }
       else
       {
-        seqsTail = seqs.insertAfter(seqsTail, p);
+        seqsTail = seqs.insertAfter(seqsTail, std::move(p));
       }
     }
   }

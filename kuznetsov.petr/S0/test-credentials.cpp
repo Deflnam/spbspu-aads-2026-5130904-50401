@@ -9,4 +9,3 @@ BOOST_AUTO_TEST_CASE(GetName_test)
   kuznetsov::getName(out);
   BOOST_TEST(out.str() == "kuznetsov.petr");
 }
-
