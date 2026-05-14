@@ -15,7 +15,7 @@ namespace burukov
   template<typename KeyType, typename ValueType,
            typename HashType = SipHash<KeyType>,
            typename EqualType = std::equal_to<KeyType>>
-           
+
   class HashTable
   {
     friend class HashIterator<KeyType, ValueType, HashType, EqualType>;

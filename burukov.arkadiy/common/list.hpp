@@ -319,7 +319,7 @@ namespace burukov
     }
     LCIter<T> begin() const { return cbegin(); }
     LCIter<T> end() const { return cend(); }
-    
+
   private:
     Node< T > *head_;
     size_t size_;
