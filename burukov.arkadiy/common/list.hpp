@@ -272,7 +272,54 @@ namespace burukov
     {
       return LCIter< T >(nullptr);
     }
+    void pushBack(const T &val)
+    {
+        Node<T> *newNode = new Node<T>(val, nullptr);
+        if (!head_) {
+            head_ = newNode;
+        } else {
+            Node<T> *cur = head_;
+            while (cur->next_) {
+                cur = cur->next_;
+            }
+            cur->next_ = newNode;
+        }
+        ++size_;
+    }
 
+    void pushBack(T &&val)
+    {
+        Node<T> *newNode = new Node<T>(std::move(val), nullptr);
+        if (!head_) {
+            head_ = newNode;
+        } else {
+            Node<T> *cur = head_;
+            while (cur->next_) {
+                cur = cur->next_;
+            }
+            cur->next_ = newNode;
+        }
+        ++size_;
+    }
+
+    LIter<T> erase(LIter<T> pos)
+    {
+        if (pos.ptr_ == head_) {
+            popFront();
+            return LIter<T>(head_);
+        }
+        Node<T> *prev = head_;
+        while (prev->next_ != pos.ptr_) {
+            prev = prev->next_;
+        }
+        prev->next_ = pos.ptr_->next_;
+        delete pos.ptr_;
+        --size_;
+        return LIter<T>(prev->next_);
+    }
+    LCIter<T> begin() const { return cbegin(); }
+    LCIter<T> end() const { return cend(); }
+    
   private:
     Node< T > *head_;
     size_t size_;
