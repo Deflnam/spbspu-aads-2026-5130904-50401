@@ -335,5 +335,4 @@ namespace burukov
     size_t size_;
   };
 }
-
 #endif
