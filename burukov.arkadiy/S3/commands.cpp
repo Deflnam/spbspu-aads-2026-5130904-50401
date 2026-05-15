@@ -47,7 +47,7 @@ namespace burukov
     }
     if (names.isEmpty())
     {
-      output_stream << "0\n";
+      output_stream << "\n";
       return;
     }
     helpers::sortStrings(names);
