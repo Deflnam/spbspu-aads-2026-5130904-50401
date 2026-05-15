@@ -35,11 +35,11 @@ namespace burukov
     explicit LIter(Node< T > *p):
       ptr_(p)
     {}
-    T &operator*()
+    T &operator*() const
     {
       return ptr_->val_;
     }
-    T *operator->()
+    T *operator->() const
     {
       return &(ptr_->val_);
     }
