@@ -57,12 +57,12 @@ namespace burukov
     static void initFakes();
     Node* findNode(const Key& k) const;
     Node* leftmost(Node* node) const;
+    Node* rightmost(Node* node) const;
     Node* cloneTree(Node* src, Node* parent);
     void deleteTree(Node* node);
     size_t getHeight(Node* node) const;
     void transplant(Node* u, Node* v);
     bool less(const Key& a, const Key& b) const { return comp_(a, b); }
-    bool equal(const Key& a, const Key& b) const { return !comp_(a, b) && !comp_(b, a); }
   };
 }
 
@@ -352,6 +352,21 @@ burukov::BSTree< Key, Value, Compare >::leftmost(Node* node) const
   while (node != nullptr && !node->left_->isFake())
   {
     node = node->left_;
+  }
+  return node;
+}
+
+template< class Key, class Value, class Compare >
+burukov::detail::TreeNode< Key, Value >*
+burukov::BSTree< Key, Value, Compare >::rightmost(Node* node) const
+{
+  if (node == nullptr || node->isFake())
+  {
+    return fake_leaf_;
+  }
+  while (node != nullptr && !node->right_->isFake())
+  {
+    node = node->right_;
   }
   return node;
 }
