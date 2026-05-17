@@ -7,6 +7,7 @@ using namespace burukov;
 
 BOOST_AUTO_TEST_SUITE(BSTreeTests)
 
+
 BOOST_AUTO_TEST_CASE(default_constructor_makes_empty_tree)
 {
   BSTree< int, std::string > t;
@@ -55,7 +56,6 @@ BOOST_AUTO_TEST_CASE(move_assignment_transfers_ownership)
 }
 
 
-
 BOOST_AUTO_TEST_CASE(push_adds_new_elements)
 {
   BSTree< int, std::string > t;
@@ -84,8 +84,6 @@ BOOST_AUTO_TEST_CASE(push_with_rvalue_moves_value)
   t.push(99, std::move(val));
   BOOST_CHECK_EQUAL(t.at(99), "test");
 }
-
-
 
 BOOST_AUTO_TEST_CASE(at_returns_correct_value)
 {
@@ -120,7 +118,6 @@ BOOST_AUTO_TEST_CASE(at_throws_on_missing_key)
   const auto& ct = t;
   BOOST_CHECK_THROW(ct.at(2), std::out_of_range);
 }
-
 
 BOOST_AUTO_TEST_CASE(drop_removes_leaf_node)
 {
@@ -180,7 +177,6 @@ BOOST_AUTO_TEST_CASE(drop_throws_on_missing_key)
 }
 
 
-
 BOOST_AUTO_TEST_CASE(iterator_traverses_in_order)
 {
   BSTree< int, std::string > t;
@@ -230,8 +226,6 @@ BOOST_AUTO_TEST_CASE(const_iterator_works)
   }
 }
 
-
-
 BOOST_AUTO_TEST_CASE(height_of_empty_tree_is_zero)
 {
   BSTree< int, std::string > t;
@@ -278,8 +272,6 @@ BOOST_AUTO_TEST_CASE(height_of_subtree)
   ++it;
   BOOST_CHECK_EQUAL(t.height(it), 2);
 }
-
-
 
 BOOST_AUTO_TEST_CASE(rotate_left_simple)
 {
@@ -422,7 +414,6 @@ BOOST_AUTO_TEST_CASE(rotate_on_leaf_returns_same)
 }
 
 
-
 BOOST_AUTO_TEST_CASE(clear_removes_all_elements)
 {
   BSTree< int, std::string > t;
@@ -464,6 +455,7 @@ BOOST_AUTO_TEST_CASE(custom_comparator_works)
     BOOST_CHECK_EQUAL((*it).first, expected[i]);
   }
 }
+
 
 
 BOOST_AUTO_TEST_CASE(stress_large_tree)

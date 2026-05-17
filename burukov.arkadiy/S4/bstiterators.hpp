@@ -33,14 +33,11 @@ namespace detail
     bool operator==(const BSTIteratorBase& other) const;
     bool operator!=(const BSTIteratorBase& other) const;
 
-  private:
     NodeType* node_;
 
+  private:
     void goToNext();
     void goToPrev();
-
-    template< class K, class V, class C >
-    friend class BSTree;
   };
 
 }
@@ -52,7 +49,6 @@ template< class Key, class Value >
 using BSTConstIterator = detail::BSTIteratorBase< Key, Value, true >;
 
 }
-
 
 
 template< class Key, class Value, bool IsConst >

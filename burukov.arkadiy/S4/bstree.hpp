@@ -36,7 +36,6 @@ public:
   void push(Key&& k, Value&& v);
   Value drop(const Key& k);
 
-
   bool hasKey(const Key& k) const;
 
   iterator begin() noexcept;
@@ -75,7 +74,6 @@ private:
 };
 
 }
-
 
 template< class Key, class Value, class Compare >
 void burukov::BSTree< Key, Value, Compare >::initFakes()
@@ -466,7 +464,7 @@ size_t burukov::BSTree< Key, Value, Compare >::height() const
 template< class Key, class Value, class Compare >
 size_t burukov::BSTree< Key, Value, Compare >::height(const_iterator it) const
 {
-  return computeHeight(const_cast< Node* >(it.node_));
+  return computeHeight(it.node_);
 }
 
 template< class Key, class Value, class Compare >
@@ -521,7 +519,7 @@ template< class Key, class Value, class Compare >
 typename burukov::BSTree< Key, Value, Compare >::const_iterator
 burukov::BSTree< Key, Value, Compare >::rotateLeft(const_iterator it)
 {
-  Node* y = const_cast< Node* >(it.node_);
+  Node* y = it.node_;
   if (y->isFake() || y->right_->isFake())
   {
     return it;
@@ -535,7 +533,7 @@ template< class Key, class Value, class Compare >
 typename burukov::BSTree< Key, Value, Compare >::const_iterator
 burukov::BSTree< Key, Value, Compare >::rotateRight(const_iterator it)
 {
-  Node* x = const_cast< Node* >(it.node_);
+  Node* x = it.node_;
   if (x->isFake() || x->left_->isFake())
   {
     return it;
@@ -549,7 +547,7 @@ template< class Key, class Value, class Compare >
 typename burukov::BSTree< Key, Value, Compare >::const_iterator
 burukov::BSTree< Key, Value, Compare >::rotateLargeLeft(const_iterator it)
 {
-  Node* node = const_cast< Node* >(it.node_);
+  Node* node = it.node_;
   if (node->isFake() || node->left_->isFake() || node->left_->right_->isFake())
   {
     return it;
@@ -564,7 +562,7 @@ template< class Key, class Value, class Compare >
 typename burukov::BSTree< Key, Value, Compare >::const_iterator
 burukov::BSTree< Key, Value, Compare >::rotateLargeRight(const_iterator it)
 {
-  Node* node = const_cast< Node* >(it.node_);
+  Node* node = it.node_;
   if (node->isFake() || node->right_->isFake() || node->right_->left_->isFake())
   {
     return it;
