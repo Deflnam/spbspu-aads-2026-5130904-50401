@@ -36,6 +36,9 @@ public:
   void push(Key&& k, Value&& v);
   Value drop(const Key& k);
 
+
+  bool hasKey(const Key& k) const;
+
   iterator begin() noexcept;
   iterator end() noexcept;
   const_iterator begin() const noexcept;
@@ -243,6 +246,12 @@ burukov::BSTree< Key, Value, Compare >::findNode(const Key& k) const
     }
   }
   return nullptr;
+}
+
+template< class Key, class Value, class Compare >
+bool burukov::BSTree< Key, Value, Compare >::hasKey(const Key& k) const
+{
+  return findNode(k) != nullptr;
 }
 
 template< class Key, class Value, class Compare >

@@ -26,7 +26,7 @@ void burukov::cmdPrint(std::istream& in, std::ostream& out, Dicts& dicts)
   out << '\n';
 }
 
-void burukov::cmdComplement(std::istream& in, std::ostream&, Dicts& dicts)
+void burukov::cmdComplement(std::istream& in, std::ostream& out, Dicts& dicts)
 {
   std::string new_name, a_name, b_name;
   if (!(in >> new_name >> a_name >> b_name))
@@ -54,7 +54,7 @@ void burukov::cmdComplement(std::istream& in, std::ostream&, Dicts& dicts)
   dicts.push(new_name, std::move(res));
 }
 
-void burukov::cmdIntersect(std::istream& in, std::ostream&, Dicts& dicts)
+void burukov::cmdIntersect(std::istream& in, std::ostream& out, Dicts& dicts)
 {
   std::string new_name, a_name, b_name;
   if (!(in >> new_name >> a_name >> b_name))
@@ -81,7 +81,7 @@ void burukov::cmdIntersect(std::istream& in, std::ostream&, Dicts& dicts)
   dicts.push(new_name, std::move(res));
 }
 
-void burukov::cmdUnion(std::istream& in, std::ostream&, Dicts& dicts)
+void burukov::cmdUnion(std::istream& in, std::ostream& out, Dicts& dicts)
 {
   std::string new_name, a_name, b_name;
   if (!(in >> new_name >> a_name >> b_name))

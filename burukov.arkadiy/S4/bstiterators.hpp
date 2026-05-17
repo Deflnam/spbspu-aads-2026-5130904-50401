@@ -17,7 +17,9 @@ namespace detail
   class BSTIteratorBase
   {
   public:
-    using NodeType = typename std::conditional< IsConst,const TreeNode< Key, Value >,TreeNode< Key, Value > >::type;
+    using NodeType = typename std::conditional< IsConst,
+                                                 const TreeNode< Key, Value >,
+                                                 TreeNode< Key, Value > >::type;
 
     explicit BSTIteratorBase(NodeType* node = nullptr);
 
@@ -31,12 +33,14 @@ namespace detail
     bool operator==(const BSTIteratorBase& other) const;
     bool operator!=(const BSTIteratorBase& other) const;
 
-  protected:
+  private:
     NodeType* node_;
 
-  private:
     void goToNext();
     void goToPrev();
+
+    template< class K, class V, class C >
+    friend class BSTree;
   };
 
 }
@@ -48,6 +52,7 @@ template< class Key, class Value >
 using BSTConstIterator = detail::BSTIteratorBase< Key, Value, true >;
 
 }
+
 
 
 template< class Key, class Value, bool IsConst >

@@ -54,13 +54,13 @@ int main(int argc, char* argv[])
 
   burukov::Dicts dicts;
   std::string token;
-  std::string cur;
+  std::string current;
 
   while (file >> token)
   {
     if (burukov::isInteger(token))
     {
-      if (cur.empty())
+      if (current.empty())
       {
         continue;
       }
@@ -71,22 +71,24 @@ int main(int argc, char* argv[])
       {
         try
         {
-          dicts.at(cur).push(key, val);
+          dicts.at(current).push(key, val);
         }
         catch (const std::out_of_range&)
-        {}
+        {
+          if (!dicts.hasKey(current))
+          {
+            dicts.push(current, burukov::Dict{});
+          }
+          dicts.at(current).push(key, val);
+        }
       }
     }
     else
     {
-      cur = token;
-      try
+      current = token;
+      if (!dicts.hasKey(current))
       {
-        dicts.at(cur);
-      }
-      catch (const std::out_of_range&)
-      {
-        dicts.push(cur, burukov::Dict{});
+        dicts.push(current, burukov::Dict{});
       }
     }
   }
