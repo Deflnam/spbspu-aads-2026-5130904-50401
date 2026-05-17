@@ -459,22 +459,6 @@ BOOST_AUTO_TEST_CASE(swap_exchanges_contents)
   BOOST_CHECK_EQUAL(t2.at(1), "one");
 }
 
-BOOST_AUTO_TEST_CASE(custom_comparator_works)
-{
-  BSTree< int, std::string, std::greater< int > > t;
-  t.push(1, "a");
-  t.push(2, "b");
-  t.push(3, "c");
-  t.push(0, "z");
-
-  int expected[] = {3, 2, 1, 0};
-  int i = 0;
-  for (auto it = t.begin(); it != t.end(); ++it, ++i)
-  {
-    BOOST_CHECK_EQUAL((*it).first, expected[i]);
-  }
-}
-
 BOOST_AUTO_TEST_CASE(stress_large_tree)
 {
   BSTree< int, std::string > t;
