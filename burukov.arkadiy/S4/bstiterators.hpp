@@ -18,7 +18,6 @@ namespace burukov
       using Node = TreeNode< Key, Value >;
 
       explicit BSTIterator(Node* node = nullptr);
-      BSTIterator(const BSTIterator& other) = default;
 
       std::pair< const Key, Value > operator*() const;
 
