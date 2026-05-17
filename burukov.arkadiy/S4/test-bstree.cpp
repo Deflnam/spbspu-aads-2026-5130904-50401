@@ -7,7 +7,6 @@ using namespace burukov;
 
 BOOST_AUTO_TEST_SUITE(BSTreeTests)
 
-
 BOOST_AUTO_TEST_CASE(default_constructor_makes_empty_tree)
 {
   BSTree< int, std::string > t;
@@ -55,7 +54,6 @@ BOOST_AUTO_TEST_CASE(move_assignment_transfers_ownership)
   BOOST_CHECK(t1.empty());
 }
 
-
 BOOST_AUTO_TEST_CASE(push_adds_new_elements)
 {
   BSTree< int, std::string > t;
@@ -84,7 +82,6 @@ BOOST_AUTO_TEST_CASE(push_with_rvalue_moves_value)
   t.push(99, std::move(val));
   BOOST_CHECK_EQUAL(t.at(99), "test");
 }
-
 
 BOOST_AUTO_TEST_CASE(at_returns_correct_value)
 {
@@ -120,8 +117,6 @@ BOOST_AUTO_TEST_CASE(at_throws_on_missing_key)
   BOOST_CHECK_THROW(ct.at(2), std::out_of_range);
 }
 
-
-
 BOOST_AUTO_TEST_CASE(hasKey_returns_true_for_existing_key)
 {
   BSTree< int, std::string > t;
@@ -135,8 +130,6 @@ BOOST_AUTO_TEST_CASE(hasKey_returns_false_for_missing_key)
   t.push(1, "one");
   BOOST_CHECK(!t.hasKey(2));
 }
-
-
 
 BOOST_AUTO_TEST_CASE(drop_removes_leaf_node)
 {
@@ -194,7 +187,6 @@ BOOST_AUTO_TEST_CASE(drop_throws_on_missing_key)
   t.push(1, "one");
   BOOST_CHECK_THROW(t.drop(999), std::out_of_range);
 }
-
 
 BOOST_AUTO_TEST_CASE(iterator_traverses_in_order)
 {
@@ -255,7 +247,6 @@ BOOST_AUTO_TEST_CASE(iterator_post_decrement)
   BOOST_CHECK_EQUAL((*it).first, 1);
 }
 
-
 BOOST_AUTO_TEST_CASE(height_of_empty_tree_is_zero)
 {
   BSTree< int, std::string > t;
@@ -300,9 +291,8 @@ BOOST_AUTO_TEST_CASE(height_of_subtree)
   auto it = t.begin();
   ++it;
   ++it;
-  BOOST_CHECK_EQUAL(t.height(it), 2);
+  BOOST_CHECK_EQUAL(t.height(it), 1);
 }
-
 
 BOOST_AUTO_TEST_CASE(rotate_left_simple)
 {
@@ -444,7 +434,6 @@ BOOST_AUTO_TEST_CASE(rotate_on_leaf_returns_same)
   BOOST_CHECK(it == newIt);
 }
 
-
 BOOST_AUTO_TEST_CASE(clear_removes_all_elements)
 {
   BSTree< int, std::string > t;
@@ -470,7 +459,6 @@ BOOST_AUTO_TEST_CASE(swap_exchanges_contents)
   BOOST_CHECK_EQUAL(t2.at(1), "one");
 }
 
-
 BOOST_AUTO_TEST_CASE(custom_comparator_works)
 {
   BSTree< int, std::string, std::greater< int > > t;
@@ -486,7 +474,6 @@ BOOST_AUTO_TEST_CASE(custom_comparator_works)
     BOOST_CHECK_EQUAL((*it).first, expected[i]);
   }
 }
-
 
 BOOST_AUTO_TEST_CASE(stress_large_tree)
 {

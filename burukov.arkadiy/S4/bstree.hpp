@@ -63,7 +63,6 @@ namespace burukov
   };
 }
 
-
 template< class Key, class Value, class Compare >
 void burukov::BSTree< Key, Value, Compare >::initFakeLeaf()
 {
@@ -425,7 +424,7 @@ template< class Key, class Value, class Compare >
 size_t burukov::BSTree< Key, Value, Compare >::height(iterator it) const
 {
   Node* n = it.getNode();
-  if (n == nullptr)
+  if (n == nullptr || n->isFake())
   {
     return 0;
   }
