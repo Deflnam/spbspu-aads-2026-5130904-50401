@@ -61,6 +61,8 @@ namespace burukov
     void deleteTree(Node* node);
     size_t getHeight(Node* node) const;
     void transplant(Node* u, Node* v);
+    bool less(const Key& a, const Key& b) const { return comp_(a, b); }
+    bool equal(const Key& a, const Key& b) const { return !comp_(a, b) && !comp_(b, a); }
   };
 }
 
@@ -223,11 +225,11 @@ burukov::BSTree< Key, Value, Compare >::findNode(const Key& k) const
   Node* cur = fake_root_->right_;
   while (cur != nullptr && !cur->isFake())
   {
-    if (comp_(k, cur->key_))
+    if (less(k, cur->key_))
     {
       cur = cur->left_;
     }
-    else if (comp_(cur->key_, k))
+    else if (less(cur->key_, k))
     {
       cur = cur->right_;
     }
@@ -276,11 +278,11 @@ void burukov::BSTree< Key, Value, Compare >::push(const Key& k, const Value& v)
   while (cur != nullptr && !cur->isFake())
   {
     parent = cur;
-    if (comp_(k, cur->key_))
+    if (less(k, cur->key_))
     {
       cur = cur->left_;
     }
-    else if (comp_(cur->key_, k))
+    else if (less(cur->key_, k))
     {
       cur = cur->right_;
     }
@@ -292,7 +294,7 @@ void burukov::BSTree< Key, Value, Compare >::push(const Key& k, const Value& v)
   }
 
   Node* n = new Node(k, v, parent);
-  if (comp_(k, parent->key_))
+  if (less(k, parent->key_))
   {
     parent->left_ = n;
   }
@@ -312,11 +314,11 @@ void burukov::BSTree< Key, Value, Compare >::push(Key&& k, Value&& v)
   while (cur != nullptr && !cur->isFake())
   {
     parent = cur;
-    if (comp_(k, cur->key_))
+    if (less(k, cur->key_))
     {
       cur = cur->left_;
     }
-    else if (comp_(cur->key_, k))
+    else if (less(cur->key_, k))
     {
       cur = cur->right_;
     }
@@ -328,7 +330,7 @@ void burukov::BSTree< Key, Value, Compare >::push(Key&& k, Value&& v)
   }
 
   Node* n = new Node(std::move(k), std::move(v), parent);
-  if (comp_(n->key_, parent->key_))
+  if (less(n->key_, parent->key_))
   {
     parent->left_ = n;
   }
