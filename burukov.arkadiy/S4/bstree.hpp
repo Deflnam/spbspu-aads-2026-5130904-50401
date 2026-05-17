@@ -9,70 +9,59 @@
 
 namespace burukov
 {
+  template< class Key, class Value, class Compare = std::less< Key > >
+  class BSTree
+  {
+  public:
+    using iterator = detail::BSTIterator< Key, Value >;
 
-template< class Key, class Value, class Compare = std::less< Key > >
-class BSTree
-{
-public:
-  using iterator = BSTIterator< Key, Value >;
-  using const_iterator = BSTConstIterator< Key, Value >;
+    BSTree();
+    BSTree(const BSTree& other);
+    BSTree(BSTree&& other) noexcept;
+    ~BSTree();
 
-  BSTree();
-  BSTree(const BSTree& other);
-  BSTree(BSTree&& other) noexcept;
-  ~BSTree();
+    BSTree& operator=(const BSTree& other);
+    BSTree& operator=(BSTree&& other) noexcept;
 
-  BSTree& operator=(const BSTree& other);
-  BSTree& operator=(BSTree&& other) noexcept;
+    bool empty() const { return size_ == 0; }
+    size_t size() const { return size_; }
+    void swap(BSTree& other) noexcept;
+    void clear() noexcept;
 
-  bool empty() const;
-  size_t size() const;
-  void swap(BSTree& other) noexcept;
-  void clear() noexcept;
+    const Value& at(const Key& k) const;
+    Value& at(const Key& k);
+    void push(const Key& k, const Value& v);
+    void push(Key&& k, Value&& v);
+    Value drop(const Key& k);
+    bool hasKey(const Key& k) const;
 
-  const Value& at(const Key& k) const;
-  Value& at(const Key& k);
-  void push(const Key& k, const Value& v);
-  void push(Key&& k, Value&& v);
-  Value drop(const Key& k);
+    iterator begin() const noexcept;
+    iterator end() const noexcept { return iterator(nullptr); }
 
-  bool hasKey(const Key& k) const;
+    size_t height() const;
+    size_t height(iterator it) const;
 
-  iterator begin() noexcept;
-  iterator end() noexcept;
-  const_iterator begin() const noexcept;
-  const_iterator end() const noexcept;
-  const_iterator cbegin() const noexcept;
-  const_iterator cend() const noexcept;
+    iterator rotateLeft(iterator it);
+    iterator rotateRight(iterator it);
+    iterator rotateLargeLeft(iterator it);
+    iterator rotateLargeRight(iterator it);
 
-  size_t height() const;
-  size_t height(const_iterator it) const;
+  private:
+    using Node = detail::TreeNode< Key, Value >;
 
-  const_iterator rotateLeft(const_iterator it);
-  const_iterator rotateRight(const_iterator it);
-  const_iterator rotateLargeLeft(const_iterator it);
-  const_iterator rotateLargeRight(const_iterator it);
+    Node* fake_root_;
+    Node* fake_leaf_;
+    size_t size_;
+    Compare comp_;
 
-private:
-  using Node = detail::TreeNode< Key, Value >;
-
-  Node* fake_root_;
-  Node* fake_leaf_;
-  size_t size_;
-  Compare comp_;
-
-  static void initFakes();
-
-  Node* findNode(const Key& k) const;
-  Node* getLeftmost(Node* node) const;
-  Node* cloneSubtree(Node* src, Node* parent);
-  void deleteSubtree(Node* node) noexcept;
-  size_t computeHeight(Node* node) const;
-  void replaceNode(Node* u, Node* v);
-  void rotateLeftNode(Node* y);
-  void rotateRightNode(Node* x);
-};
-
+    static void initFakes();
+    Node* findNode(const Key& k) const;
+    Node* leftmost(Node* node) const;
+    Node* cloneTree(Node* src, Node* parent);
+    void deleteTree(Node* node) noexcept;
+    size_t getHeight(Node* node) const;
+    void transplant(Node* u, Node* v);
+  };
 }
 
 template< class Key, class Value, class Compare >
@@ -88,7 +77,7 @@ void burukov::BSTree< Key, Value, Compare >::initFakes()
 }
 
 template< class Key, class Value, class Compare >
-burukov::BSTree< Key, Value, Compare >::BSTree():
+burukov::BSTree< Key, Value, Compare >::BSTree() :
   fake_root_(nullptr),
   fake_leaf_(nullptr),
   size_(0),
@@ -103,7 +92,7 @@ burukov::BSTree< Key, Value, Compare >::BSTree():
 }
 
 template< class Key, class Value, class Compare >
-burukov::BSTree< Key, Value, Compare >::BSTree(const BSTree& other):
+burukov::BSTree< Key, Value, Compare >::BSTree(const BSTree& other) :
   fake_root_(nullptr),
   fake_leaf_(nullptr),
   size_(0),
@@ -113,13 +102,13 @@ burukov::BSTree< Key, Value, Compare >::BSTree(const BSTree& other):
   fake_leaf_ = Node::fakeLeaf;
   fake_root_ = new Node(Key(), Value(), nullptr);
   fake_root_->left_ = fake_leaf_;
-  fake_root_->right_ = cloneSubtree(other.fake_root_->right_, fake_root_);
+  fake_root_->right_ = cloneTree(other.fake_root_->right_, fake_root_);
   fake_root_->parent_ = fake_leaf_;
   size_ = other.size_;
 }
 
 template< class Key, class Value, class Compare >
-burukov::BSTree< Key, Value, Compare >::BSTree(BSTree&& other) noexcept:
+burukov::BSTree< Key, Value, Compare >::BSTree(BSTree&& other) noexcept :
   fake_root_(other.fake_root_),
   fake_leaf_(other.fake_leaf_),
   size_(other.size_),
@@ -169,18 +158,6 @@ burukov::BSTree< Key, Value, Compare >::operator=(BSTree&& other) noexcept
 }
 
 template< class Key, class Value, class Compare >
-bool burukov::BSTree< Key, Value, Compare >::empty() const
-{
-  return size_ == 0;
-}
-
-template< class Key, class Value, class Compare >
-size_t burukov::BSTree< Key, Value, Compare >::size() const
-{
-  return size_;
-}
-
-template< class Key, class Value, class Compare >
 void burukov::BSTree< Key, Value, Compare >::swap(BSTree& other) noexcept
 {
   std::swap(fake_root_, other.fake_root_);
@@ -190,36 +167,36 @@ void burukov::BSTree< Key, Value, Compare >::swap(BSTree& other) noexcept
 }
 
 template< class Key, class Value, class Compare >
-void burukov::BSTree< Key, Value, Compare >::deleteSubtree(Node* node) noexcept
+void burukov::BSTree< Key, Value, Compare >::deleteTree(Node* node) noexcept
 {
   if (node->isFake())
   {
     return;
   }
-  deleteSubtree(node->left_);
-  deleteSubtree(node->right_);
+  deleteTree(node->left_);
+  deleteTree(node->right_);
   delete node;
 }
 
 template< class Key, class Value, class Compare >
 void burukov::BSTree< Key, Value, Compare >::clear() noexcept
 {
-  deleteSubtree(fake_root_->right_);
+  deleteTree(fake_root_->right_);
   fake_root_->right_ = fake_leaf_;
   size_ = 0;
 }
 
 template< class Key, class Value, class Compare >
 burukov::detail::TreeNode< Key, Value >*
-burukov::BSTree< Key, Value, Compare >::cloneSubtree(Node* src, Node* parent)
+burukov::BSTree< Key, Value, Compare >::cloneTree(Node* src, Node* parent)
 {
   if (src->isFake())
   {
     return fake_leaf_;
   }
   Node* n = new Node(src->key_, src->value_, parent);
-  n->left_ = cloneSubtree(src->left_, n);
-  n->right_ = cloneSubtree(src->right_, n);
+  n->left_ = cloneTree(src->left_, n);
+  n->right_ = cloneTree(src->right_, n);
   return n;
 }
 
@@ -348,7 +325,7 @@ void burukov::BSTree< Key, Value, Compare >::push(Key&& k, Value&& v)
 
 template< class Key, class Value, class Compare >
 burukov::detail::TreeNode< Key, Value >*
-burukov::BSTree< Key, Value, Compare >::getLeftmost(Node* node) const
+burukov::BSTree< Key, Value, Compare >::leftmost(Node* node) const
 {
   while (!node->left_->isFake())
   {
@@ -370,7 +347,7 @@ Value burukov::BSTree< Key, Value, Compare >::drop(const Key& k)
 
   if (!n->left_->isFake() && !n->right_->isFake())
   {
-    Node* succ = getLeftmost(n->right_);
+    Node* succ = leftmost(n->right_);
     n->key_ = std::move(succ->key_);
     n->value_ = std::move(succ->value_);
     n = succ;
@@ -395,80 +372,41 @@ Value burukov::BSTree< Key, Value, Compare >::drop(const Key& k)
 
 template< class Key, class Value, class Compare >
 typename burukov::BSTree< Key, Value, Compare >::iterator
-burukov::BSTree< Key, Value, Compare >::begin() noexcept
+burukov::BSTree< Key, Value, Compare >::begin() const noexcept
 {
   if (empty())
   {
     return iterator(nullptr);
   }
-  return iterator(getLeftmost(fake_root_->right_));
+  return iterator(leftmost(fake_root_->right_));
 }
 
 template< class Key, class Value, class Compare >
-typename burukov::BSTree< Key, Value, Compare >::iterator
-burukov::BSTree< Key, Value, Compare >::end() noexcept
-{
-  return iterator(nullptr);
-}
-
-template< class Key, class Value, class Compare >
-typename burukov::BSTree< Key, Value, Compare >::const_iterator
-burukov::BSTree< Key, Value, Compare >::begin() const noexcept
-{
-  if (empty())
-  {
-    return const_iterator(nullptr);
-  }
-  return const_iterator(getLeftmost(fake_root_->right_));
-}
-
-template< class Key, class Value, class Compare >
-typename burukov::BSTree< Key, Value, Compare >::const_iterator
-burukov::BSTree< Key, Value, Compare >::end() const noexcept
-{
-  return const_iterator(nullptr);
-}
-
-template< class Key, class Value, class Compare >
-typename burukov::BSTree< Key, Value, Compare >::const_iterator
-burukov::BSTree< Key, Value, Compare >::cbegin() const noexcept
-{
-  return begin();
-}
-
-template< class Key, class Value, class Compare >
-typename burukov::BSTree< Key, Value, Compare >::const_iterator
-burukov::BSTree< Key, Value, Compare >::cend() const noexcept
-{
-  return end();
-}
-
-template< class Key, class Value, class Compare >
-size_t burukov::BSTree< Key, Value, Compare >::computeHeight(Node* node) const
+size_t burukov::BSTree< Key, Value, Compare >::getHeight(Node* node) const
 {
   if (node->isFake())
   {
     return 0;
   }
-  size_t l = computeHeight(node->left_);
-  size_t r = computeHeight(node->right_);
+  size_t l = getHeight(node->left_);
+  size_t r = getHeight(node->right_);
   return 1 + ((l > r) ? l : r);
 }
 
 template< class Key, class Value, class Compare >
 size_t burukov::BSTree< Key, Value, Compare >::height() const
 {
-  return computeHeight(fake_root_->right_);
+  return getHeight(fake_root_->right_);
 }
 
 template< class Key, class Value, class Compare >
-size_t burukov::BSTree< Key, Value, Compare >::height(const_iterator it) const
+size_t burukov::BSTree< Key, Value, Compare >::height(iterator it) const
 {
-  return computeHeight(it.node_);
+  return getHeight(it.getNode());
 }
 
 template< class Key, class Value, class Compare >
-void burukov::BSTree< Key, Value, Compare >::replaceNode(Node* u, Node* v)
+void burukov::BSTree< Key, Value, Compare >::transplant(Node* u, Node* v)
 {
   if (u->parent_->isFake())
   {
@@ -486,8 +424,15 @@ void burukov::BSTree< Key, Value, Compare >::replaceNode(Node* u, Node* v)
 }
 
 template< class Key, class Value, class Compare >
-void burukov::BSTree< Key, Value, Compare >::rotateLeftNode(Node* y)
+typename burukov::BSTree< Key, Value, Compare >::iterator
+burukov::BSTree< Key, Value, Compare >::rotateLeft(iterator it)
 {
+  Node* y = it.getNode();
+  if (y->isFake() || y->right_->isFake())
+  {
+    return it;
+  }
+
   Node* x = y->right_;
   y->right_ = x->left_;
   if (!x->left_->isFake())
@@ -495,14 +440,23 @@ void burukov::BSTree< Key, Value, Compare >::rotateLeftNode(Node* y)
     x->left_->parent_ = y;
   }
 
-  replaceNode(y, x);
+  transplant(y, x);
   x->left_ = y;
   y->parent_ = x;
+
+  return iterator(x);
 }
 
 template< class Key, class Value, class Compare >
-void burukov::BSTree< Key, Value, Compare >::rotateRightNode(Node* x)
+typename burukov::BSTree< Key, Value, Compare >::iterator
+burukov::BSTree< Key, Value, Compare >::rotateRight(iterator it)
 {
+  Node* x = it.getNode();
+  if (x->isFake() || x->left_->isFake())
+  {
+    return it;
+  }
+
   Node* y = x->left_;
   x->left_ = y->right_;
   if (!y->right_->isFake())
@@ -510,67 +464,39 @@ void burukov::BSTree< Key, Value, Compare >::rotateRightNode(Node* x)
     y->right_->parent_ = x;
   }
 
-  replaceNode(x, y);
+  transplant(x, y);
   y->right_ = x;
   x->parent_ = y;
+
+  return iterator(y);
 }
 
 template< class Key, class Value, class Compare >
-typename burukov::BSTree< Key, Value, Compare >::const_iterator
-burukov::BSTree< Key, Value, Compare >::rotateLeft(const_iterator it)
+typename burukov::BSTree< Key, Value, Compare >::iterator
+burukov::BSTree< Key, Value, Compare >::rotateLargeLeft(iterator it)
 {
-  Node* y = it.node_;
-  if (y->isFake() || y->right_->isFake())
-  {
-    return it;
-  }
-
-  rotateLeftNode(y);
-  return const_iterator(y->parent_);
-}
-
-template< class Key, class Value, class Compare >
-typename burukov::BSTree< Key, Value, Compare >::const_iterator
-burukov::BSTree< Key, Value, Compare >::rotateRight(const_iterator it)
-{
-  Node* x = it.node_;
-  if (x->isFake() || x->left_->isFake())
-  {
-    return it;
-  }
-
-  rotateRightNode(x);
-  return const_iterator(x->parent_);
-}
-
-template< class Key, class Value, class Compare >
-typename burukov::BSTree< Key, Value, Compare >::const_iterator
-burukov::BSTree< Key, Value, Compare >::rotateLargeLeft(const_iterator it)
-{
-  Node* node = it.node_;
+  Node* node = it.getNode();
   if (node->isFake() || node->left_->isFake() || node->left_->right_->isFake())
   {
     return it;
   }
 
-  rotateRightNode(node->left_);
-  rotateLeftNode(node);
-  return const_iterator(node->parent_);
+  rotateRight(iterator(node->left_));
+  return rotateLeft(it);
 }
 
 template< class Key, class Value, class Compare >
-typename burukov::BSTree< Key, Value, Compare >::const_iterator
-burukov::BSTree< Key, Value, Compare >::rotateLargeRight(const_iterator it)
+typename burukov::BSTree< Key, Value, Compare >::iterator
+burukov::BSTree< Key, Value, Compare >::rotateLargeRight(iterator it)
 {
-  Node* node = it.node_;
+  Node* node = it.getNode();
   if (node->isFake() || node->right_->isFake() || node->right_->left_->isFake())
   {
     return it;
   }
 
-  rotateLeftNode(node->right_);
-  rotateRightNode(node);
-  return const_iterator(node->parent_);
+  rotateLeft(iterator(node->right_));
+  return rotateRight(it);
 }
 
 #endif

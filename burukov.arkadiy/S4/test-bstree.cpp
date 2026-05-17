@@ -85,6 +85,7 @@ BOOST_AUTO_TEST_CASE(push_with_rvalue_moves_value)
   BOOST_CHECK_EQUAL(t.at(99), "test");
 }
 
+
 BOOST_AUTO_TEST_CASE(at_returns_correct_value)
 {
   BSTree< int, std::string > t;
@@ -118,6 +119,24 @@ BOOST_AUTO_TEST_CASE(at_throws_on_missing_key)
   const auto& ct = t;
   BOOST_CHECK_THROW(ct.at(2), std::out_of_range);
 }
+
+
+
+BOOST_AUTO_TEST_CASE(hasKey_returns_true_for_existing_key)
+{
+  BSTree< int, std::string > t;
+  t.push(1, "one");
+  BOOST_CHECK(t.hasKey(1));
+}
+
+BOOST_AUTO_TEST_CASE(hasKey_returns_false_for_missing_key)
+{
+  BSTree< int, std::string > t;
+  t.push(1, "one");
+  BOOST_CHECK(!t.hasKey(2));
+}
+
+
 
 BOOST_AUTO_TEST_CASE(drop_removes_leaf_node)
 {
@@ -211,20 +230,31 @@ BOOST_AUTO_TEST_CASE(iterator_moves_backward)
   BOOST_CHECK_EQUAL((*it).first, 1);
 }
 
-BOOST_AUTO_TEST_CASE(const_iterator_works)
+BOOST_AUTO_TEST_CASE(iterator_post_increment)
 {
   BSTree< int, std::string > t;
   t.push(1, "one");
   t.push(2, "two");
-  const auto& ct = t;
 
-  int expected[] = {1, 2};
-  int i = 0;
-  for (auto it = ct.cbegin(); it != ct.cend(); ++it, ++i)
-  {
-    BOOST_CHECK_EQUAL((*it).first, expected[i]);
-  }
+  auto it = t.begin();
+  auto it2 = it++;
+  BOOST_CHECK_EQUAL((*it2).first, 1);
+  BOOST_CHECK_EQUAL((*it).first, 2);
 }
+
+BOOST_AUTO_TEST_CASE(iterator_post_decrement)
+{
+  BSTree< int, std::string > t;
+  t.push(1, "one");
+  t.push(2, "two");
+
+  auto it = t.begin();
+  ++it;
+  auto it2 = it--;
+  BOOST_CHECK_EQUAL((*it2).first, 2);
+  BOOST_CHECK_EQUAL((*it).first, 1);
+}
+
 
 BOOST_AUTO_TEST_CASE(height_of_empty_tree_is_zero)
 {
@@ -267,11 +297,12 @@ BOOST_AUTO_TEST_CASE(height_of_subtree)
   t.push(2, "two");
   t.push(4, "four");
 
-  auto it = t.cbegin();
+  auto it = t.begin();
   ++it;
   ++it;
   BOOST_CHECK_EQUAL(t.height(it), 2);
 }
+
 
 BOOST_AUTO_TEST_CASE(rotate_left_simple)
 {
@@ -279,7 +310,7 @@ BOOST_AUTO_TEST_CASE(rotate_left_simple)
   t.push(1, "one");
   t.push(2, "two");
 
-  auto it = t.cbegin();
+  auto it = t.begin();
   ++it;
   auto newIt = t.rotateLeft(it);
   BOOST_CHECK_EQUAL((*newIt).first, 2);
@@ -293,7 +324,7 @@ BOOST_AUTO_TEST_CASE(rotate_right_simple)
   t.push(2, "two");
   t.push(1, "one");
 
-  auto it = t.cbegin();
+  auto it = t.begin();
   ++it;
   auto newIt = t.rotateRight(it);
   BOOST_CHECK_EQUAL((*newIt).first, 1);
@@ -308,7 +339,7 @@ BOOST_AUTO_TEST_CASE(rotate_left_preserves_order)
   t.push(12, "twelve");
   t.push(20, "twenty");
 
-  auto it = t.cbegin();
+  auto it = t.begin();
   ++it;
   ++it;
   ++it;
@@ -316,7 +347,7 @@ BOOST_AUTO_TEST_CASE(rotate_left_preserves_order)
 
   int expected[] = {5, 10, 12, 15, 20};
   int i = 0;
-  for (auto cit = t.cbegin(); cit != t.cend(); ++cit, ++i)
+  for (auto cit = t.begin(); cit != t.end(); ++cit, ++i)
   {
     BOOST_CHECK_EQUAL((*cit).first, expected[i]);
   }
@@ -331,13 +362,13 @@ BOOST_AUTO_TEST_CASE(rotate_right_preserves_order)
   t.push(3, "three");
   t.push(7, "seven");
 
-  auto it = t.cbegin();
+  auto it = t.begin();
   ++it;
   t.rotateRight(it);
 
   int expected[] = {3, 5, 7, 10, 15};
   int i = 0;
-  for (auto cit = t.cbegin(); cit != t.cend(); ++cit, ++i)
+  for (auto cit = t.begin(); cit != t.end(); ++cit, ++i)
   {
     BOOST_CHECK_EQUAL((*cit).first, expected[i]);
   }
@@ -356,13 +387,13 @@ BOOST_AUTO_TEST_CASE(rotate_large_left)
   t.push(22, "twenty two");
   t.push(28, "twenty eight");
 
-  auto it = t.cbegin();
+  auto it = t.begin();
   for (int i = 0; i < 6; ++i) ++it;
   t.rotateLargeLeft(it);
 
   int expected[] = {10, 20, 22, 25, 28, 30, 35, 40, 50};
   int i = 0;
-  for (auto cit = t.cbegin(); cit != t.cend(); ++cit, ++i)
+  for (auto cit = t.begin(); cit != t.end(); ++cit, ++i)
   {
     BOOST_CHECK_EQUAL((*cit).first, expected[i]);
   }
@@ -381,14 +412,14 @@ BOOST_AUTO_TEST_CASE(rotate_large_right)
   t.push(6, "six");
   t.push(9, "nine");
 
-  auto it = t.cbegin();
+  auto it = t.begin();
   ++it;
   ++it;
   t.rotateLargeRight(it);
 
   int expected[] = {3, 5, 6, 8, 9, 10, 15, 20, 25};
   int i = 0;
-  for (auto cit = t.cbegin(); cit != t.cend(); ++cit, ++i)
+  for (auto cit = t.begin(); cit != t.end(); ++cit, ++i)
   {
     BOOST_CHECK_EQUAL((*cit).first, expected[i]);
   }
@@ -397,7 +428,7 @@ BOOST_AUTO_TEST_CASE(rotate_large_right)
 BOOST_AUTO_TEST_CASE(rotate_on_fake_returns_same)
 {
   BSTree< int, std::string > t;
-  auto it = t.cbegin();
+  auto it = t.begin();
   auto newIt = t.rotateLeft(it);
   BOOST_CHECK(it == newIt);
 }
@@ -408,7 +439,7 @@ BOOST_AUTO_TEST_CASE(rotate_on_leaf_returns_same)
   t.push(2, "two");
   t.push(1, "one");
 
-  auto it = t.cbegin();
+  auto it = t.begin();
   auto newIt = t.rotateLeft(it);
   BOOST_CHECK(it == newIt);
 }
@@ -450,12 +481,11 @@ BOOST_AUTO_TEST_CASE(custom_comparator_works)
 
   int expected[] = {3, 2, 1, 0};
   int i = 0;
-  for (auto it = t.cbegin(); it != t.cend(); ++it, ++i)
+  for (auto it = t.begin(); it != t.end(); ++it, ++i)
   {
     BOOST_CHECK_EQUAL((*it).first, expected[i]);
   }
 }
-
 
 
 BOOST_AUTO_TEST_CASE(stress_large_tree)

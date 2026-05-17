@@ -1,6 +1,5 @@
 #include "commands.hpp"
 #include <stdexcept>
-#include <utility>
 
 void burukov::cmdPrint(std::istream& in, std::ostream& out, Dicts& dicts)
 {
@@ -18,7 +17,7 @@ void burukov::cmdPrint(std::istream& in, std::ostream& out, Dicts& dicts)
   }
 
   out << name;
-  for (auto it = d.cbegin(); it != d.cend(); ++it)
+  for (auto it = d.begin(); it != d.end(); ++it)
   {
     auto p = *it;
     out << ' ' << p.first << ' ' << p.second;
@@ -38,7 +37,7 @@ void burukov::cmdComplement(std::istream& in, std::ostream&, Dicts& dicts)
   const Dict& b = dicts.at(b_name);
   Dict res;
 
-  for (auto it = a.cbegin(); it != a.cend(); ++it)
+  for (auto it = a.begin(); it != a.end(); ++it)
   {
     auto p = *it;
     try
@@ -66,7 +65,7 @@ void burukov::cmdIntersect(std::istream& in, std::ostream&, Dicts& dicts)
   const Dict& b = dicts.at(b_name);
   Dict res;
 
-  for (auto it = a.cbegin(); it != a.cend(); ++it)
+  for (auto it = a.begin(); it != a.end(); ++it)
   {
     auto p = *it;
     try
@@ -93,13 +92,13 @@ void burukov::cmdUnion(std::istream& in, std::ostream&, Dicts& dicts)
   const Dict& b = dicts.at(b_name);
   Dict res;
 
-  for (auto it = a.cbegin(); it != a.cend(); ++it)
+  for (auto it = a.begin(); it != a.end(); ++it)
   {
     auto p = *it;
     res.push(p.first, p.second);
   }
 
-  for (auto it = b.cbegin(); it != b.cend(); ++it)
+  for (auto it = b.begin(); it != b.end(); ++it)
   {
     auto p = *it;
     try

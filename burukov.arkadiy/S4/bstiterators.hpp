@@ -6,72 +6,72 @@
 
 namespace burukov
 {
+  template< class Key, class Value, class Compare >
+  class BSTree;
 
-template< class Key, class Value, class Compare >
-class BSTree;
-
-namespace detail
-{
-
-  template< class Key, class Value, bool IsConst >
-  class BSTIteratorBase
+  namespace detail
   {
-  public:
-    using NodeType = typename std::conditional< IsConst,
-                                                 const TreeNode< Key, Value >,
-                                                 TreeNode< Key, Value > >::type;
+    template< class Key, class Value >
+    class BSTIterator
+    {
+    public:
+      using Node = TreeNode< Key, Value >;
 
-    explicit BSTIteratorBase(NodeType* node = nullptr);
+      explicit BSTIterator(Node* node = nullptr);
+      BSTIterator(const BSTIterator& other) = default;
 
-    std::pair< const Key, Value > operator*() const;
+      std::pair< const Key, Value > operator*() const;
 
-    BSTIteratorBase& operator++();
-    BSTIteratorBase operator++(int);
-    BSTIteratorBase& operator--();
-    BSTIteratorBase operator--(int);
+      BSTIterator& operator++();
+      BSTIterator operator++(int);
+      BSTIterator& operator--();
+      BSTIterator operator--(int);
 
-    bool operator==(const BSTIteratorBase& other) const;
-    bool operator!=(const BSTIteratorBase& other) const;
+      bool operator==(const BSTIterator& other) const;
+      bool operator!=(const BSTIterator& other) const;
 
-    NodeType* node_;
+      Node* getNode() const { return node_; }
 
-  private:
-    void goToNext();
-    void goToPrev();
-  };
+    private:
+      Node* node_;
 
+      template< class K, class V, class C >
+      friend class BSTree;
+    };
+  }
 }
 
 template< class Key, class Value >
-using BSTIterator = detail::BSTIteratorBase< Key, Value, false >;
-
-template< class Key, class Value >
-using BSTConstIterator = detail::BSTIteratorBase< Key, Value, true >;
-
-}
-
-
-template< class Key, class Value, bool IsConst >
-burukov::detail::BSTIteratorBase< Key, Value, IsConst >::BSTIteratorBase(NodeType* node):
+burukov::detail::BSTIterator< Key, Value >::BSTIterator(Node* node) :
   node_(node)
 {}
 
-template< class Key, class Value, bool IsConst >
+template< class Key, class Value >
 std::pair< const Key, Value >
-burukov::detail::BSTIteratorBase< Key, Value, IsConst >::operator*() const
+burukov::detail::BSTIterator< Key, Value >::operator*() const
 {
   return {node_->key_, node_->value_};
 }
 
-template< class Key, class Value, bool IsConst >
-void burukov::detail::BSTIteratorBase< Key, Value, IsConst >::goToNext()
+template< class Key, class Value >
+burukov::detail::BSTIterator< Key, Value >&
+burukov::detail::BSTIterator< Key, Value >::operator++()
 {
-  if (node_->isFake())
+  if (node_->right_->isFake())
   {
-    return;
+    Node* p = node_->parent_;
+    while (!p->isFake() && node_ == p->right_)
+    {
+      node_ = p;
+      p = p->parent_;
+    }
+    node_ = p;
+    if (node_->isFake())
+    {
+      node_ = nullptr;
+    }
   }
-
-  if (!node_->right_->isFake())
+  else
   {
     node_ = node_->right_;
     while (!node_->left_->isFake())
@@ -79,13 +79,33 @@ void burukov::detail::BSTIteratorBase< Key, Value, IsConst >::goToNext()
       node_ = node_->left_;
     }
   }
-  else
+  return *this;
+}
+
+template< class Key, class Value >
+burukov::detail::BSTIterator< Key, Value >
+burukov::detail::BSTIterator< Key, Value >::operator++(int)
+{
+  BSTIterator tmp = *this;
+  ++(*this);
+  return tmp;
+}
+
+template< class Key, class Value >
+burukov::detail::BSTIterator< Key, Value >&
+burukov::detail::BSTIterator< Key, Value >::operator--()
+{
+  if (node_ == nullptr)
   {
-    NodeType* p = node_->parent_;
-    while (!p->isFake() && node_ == p->right_)
+    return *this;
+  }
+  if (node_->left_->isFake())
+  {
+    Node* p = node_->parent_;
+    while (!p->isFake() && node_ == p->left_)
     {
       node_ = p;
-      p = node_->parent_;
+      p = p->parent_;
     }
     node_ = p;
     if (node_->isFake())
@@ -93,17 +113,7 @@ void burukov::detail::BSTIteratorBase< Key, Value, IsConst >::goToNext()
       node_ = nullptr;
     }
   }
-}
-
-template< class Key, class Value, bool IsConst >
-void burukov::detail::BSTIteratorBase< Key, Value, IsConst >::goToPrev()
-{
-  if (node_ == nullptr)
-  {
-    return;
-  }
-
-  if (!node_->left_->isFake())
+  else
   {
     node_ = node_->left_;
     while (!node_->right_->isFake())
@@ -111,66 +121,26 @@ void burukov::detail::BSTIteratorBase< Key, Value, IsConst >::goToPrev()
       node_ = node_->right_;
     }
   }
-  else
-  {
-    NodeType* p = node_->parent_;
-    while (!p->isFake() && node_ == p->left_)
-    {
-      node_ = p;
-      p = node_->parent_;
-    }
-    node_ = p;
-    if (node_->isFake())
-    {
-      node_ = nullptr;
-    }
-  }
-}
-
-template< class Key, class Value, bool IsConst >
-burukov::detail::BSTIteratorBase< Key, Value, IsConst >&
-burukov::detail::BSTIteratorBase< Key, Value, IsConst >::operator++()
-{
-  goToNext();
   return *this;
 }
 
-template< class Key, class Value, bool IsConst >
-burukov::detail::BSTIteratorBase< Key, Value, IsConst >
-burukov::detail::BSTIteratorBase< Key, Value, IsConst >::operator++(int)
+template< class Key, class Value >
+burukov::detail::BSTIterator< Key, Value >
+burukov::detail::BSTIterator< Key, Value >::operator--(int)
 {
-  BSTIteratorBase tmp = *this;
-  goToNext();
+  BSTIterator tmp = *this;
+  --(*this);
   return tmp;
 }
 
-template< class Key, class Value, bool IsConst >
-burukov::detail::BSTIteratorBase< Key, Value, IsConst >&
-burukov::detail::BSTIteratorBase< Key, Value, IsConst >::operator--()
-{
-  goToPrev();
-  return *this;
-}
-
-template< class Key, class Value, bool IsConst >
-burukov::detail::BSTIteratorBase< Key, Value, IsConst >
-burukov::detail::BSTIteratorBase< Key, Value, IsConst >::operator--(int)
-{
-  BSTIteratorBase tmp = *this;
-  goToPrev();
-  return tmp;
-}
-
-template< class Key, class Value, bool IsConst >
-bool burukov::detail::BSTIteratorBase< Key, Value, IsConst >::operator==(
-    const BSTIteratorBase& other) const
+template< class Key, class Value >
+bool burukov::detail::BSTIterator< Key, Value >::operator==(const BSTIterator& other) const
 {
   return node_ == other.node_;
 }
 
-template< class Key, class Value, bool IsConst >
-bool burukov::detail::BSTIteratorBase< Key, Value, IsConst >::operator!=(
-    const BSTIteratorBase& other) const
+template< class Key, class Value >
+bool burukov::detail::BSTIterator< Key, Value >::operator!=(const BSTIterator& other) const
 {
   return node_ != other.node_;
 }

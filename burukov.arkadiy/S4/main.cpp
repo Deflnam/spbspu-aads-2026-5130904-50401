@@ -7,34 +7,32 @@
 
 namespace burukov
 {
-
-bool isInteger(const std::string& s)
-{
-  if (s.empty())
+  bool isInteger(const std::string& s)
   {
-    return false;
-  }
-
-  size_t i = 0;
-  if (s[0] == '-' || s[0] == '+')
-  {
-    i = 1;
-  }
-  if (i == s.size())
-  {
-    return false;
-  }
-
-  for (size_t j = i; j < s.size(); ++j)
-  {
-    if (s[j] < '0' || s[j] > '9')
+    if (s.empty())
     {
       return false;
     }
-  }
-  return true;
-}
 
+    size_t i = 0;
+    if (s[0] == '-' || s[0] == '+')
+    {
+      i = 1;
+    }
+    if (i == s.size())
+    {
+      return false;
+    }
+
+    for (size_t j = i; j < s.size(); ++j)
+    {
+      if (s[j] < '0' || s[j] > '9')
+      {
+        return false;
+      }
+    }
+    return true;
+  }
 }
 
 int main(int argc, char* argv[])
