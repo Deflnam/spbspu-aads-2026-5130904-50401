@@ -122,8 +122,14 @@ burukov::BSTree< Key, Value, Compare >::BSTree(BSTree&& other) noexcept :
 template< class Key, class Value, class Compare >
 burukov::BSTree< Key, Value, Compare >::~BSTree()
 {
-  clear();
-  delete fake_root_;
+  if (fake_root_ != nullptr)
+  {
+    if (fake_root_->right_ != nullptr && !fake_root_->right_->isFake())
+    {
+      deleteTree(fake_root_->right_);
+    }
+    delete fake_root_;
+  }
 }
 
 template< class Key, class Value, class Compare >
@@ -145,7 +151,10 @@ burukov::BSTree< Key, Value, Compare >::operator=(BSTree&& other) noexcept
   if (this != std::addressof(other))
   {
     clear();
-    delete fake_root_;
+    if (fake_root_ != nullptr)
+    {
+      delete fake_root_;
+    }
     fake_root_ = other.fake_root_;
     fake_leaf_ = other.fake_leaf_;
     size_ = other.size_;
@@ -181,8 +190,11 @@ void burukov::BSTree< Key, Value, Compare >::deleteTree(Node* node)
 template< class Key, class Value, class Compare >
 void burukov::BSTree< Key, Value, Compare >::clear()
 {
-  deleteTree(fake_root_->right_);
-  fake_root_->right_ = fake_leaf_;
+  if (fake_root_ != nullptr && fake_root_->right_ != nullptr && !fake_root_->right_->isFake())
+  {
+    deleteTree(fake_root_->right_);
+    fake_root_->right_ = fake_leaf_;
+  }
   size_ = 0;
 }
 
@@ -204,6 +216,10 @@ template< class Key, class Value, class Compare >
 burukov::detail::TreeNode< Key, Value >*
 burukov::BSTree< Key, Value, Compare >::findNode(const Key& k) const
 {
+  if (fake_root_ == nullptr || fake_root_->right_ == nullptr)
+  {
+    return nullptr;
+  }
   Node* cur = fake_root_->right_;
   while (cur != nullptr && !cur->isFake())
   {
@@ -390,7 +406,7 @@ template< class Key, class Value, class Compare >
 typename burukov::BSTree< Key, Value, Compare >::iterator
 burukov::BSTree< Key, Value, Compare >::begin() const
 {
-  if (fake_root_->right_->isFake())
+  if (fake_root_ == nullptr || fake_root_->right_ == nullptr || fake_root_->right_->isFake())
   {
     return iterator(nullptr);
   }
@@ -417,6 +433,10 @@ size_t burukov::BSTree< Key, Value, Compare >::getHeight(Node* node) const
 template< class Key, class Value, class Compare >
 size_t burukov::BSTree< Key, Value, Compare >::height() const
 {
+  if (fake_root_ == nullptr)
+  {
+    return 0;
+  }
   return getHeight(fake_root_->right_);
 }
 
