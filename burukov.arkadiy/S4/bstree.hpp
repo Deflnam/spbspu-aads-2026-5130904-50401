@@ -49,11 +49,12 @@ namespace burukov
   private:
     using Node = detail::TreeNode< Key, Value >;
 
-    Node* root_;
+    Node* fake_root_;
+    Node* fake_leaf_;
     size_t size_;
     Compare comp_;
 
-    static void initFakeLeaf();
+    static void initFakes();
     Node* findNode(const Key& k) const;
     Node* leftmost(Node* node) const;
     Node* cloneTree(Node* src, Node* parent);
@@ -64,7 +65,7 @@ namespace burukov
 }
 
 template< class Key, class Value, class Compare >
-void burukov::BSTree< Key, Value, Compare >::initFakeLeaf()
+void burukov::BSTree< Key, Value, Compare >::initFakes()
 {
   if (Node::fakeLeaf == nullptr)
   {
@@ -77,32 +78,44 @@ void burukov::BSTree< Key, Value, Compare >::initFakeLeaf()
 
 template< class Key, class Value, class Compare >
 burukov::BSTree< Key, Value, Compare >::BSTree() :
-  root_(nullptr),
+  fake_root_(nullptr),
+  fake_leaf_(nullptr),
   size_(0),
   comp_()
 {
-  initFakeLeaf();
-  root_ = Node::fakeLeaf;
+  initFakes();
+  fake_leaf_ = Node::fakeLeaf;
+  fake_root_ = new Node(Key(), Value(), nullptr);
+  fake_root_->left_ = fake_leaf_;
+  fake_root_->right_ = fake_leaf_;
+  fake_root_->parent_ = fake_leaf_;
 }
 
 template< class Key, class Value, class Compare >
 burukov::BSTree< Key, Value, Compare >::BSTree(const BSTree& other) :
-  root_(nullptr),
+  fake_root_(nullptr),
+  fake_leaf_(nullptr),
   size_(0),
   comp_(other.comp_)
 {
-  initFakeLeaf();
-  root_ = cloneTree(other.root_, nullptr);
+  initFakes();
+  fake_leaf_ = Node::fakeLeaf;
+  fake_root_ = new Node(Key(), Value(), nullptr);
+  fake_root_->left_ = fake_leaf_;
+  fake_root_->right_ = cloneTree(other.fake_root_->right_, fake_root_);
+  fake_root_->parent_ = fake_leaf_;
   size_ = other.size_;
 }
 
 template< class Key, class Value, class Compare >
 burukov::BSTree< Key, Value, Compare >::BSTree(BSTree&& other) noexcept :
-  root_(other.root_),
+  fake_root_(other.fake_root_),
+  fake_leaf_(other.fake_leaf_),
   size_(other.size_),
   comp_(std::move(other.comp_))
 {
-  other.root_ = Node::fakeLeaf;
+  other.fake_root_ = nullptr;
+  other.fake_leaf_ = nullptr;
   other.size_ = 0;
 }
 
@@ -110,6 +123,7 @@ template< class Key, class Value, class Compare >
 burukov::BSTree< Key, Value, Compare >::~BSTree()
 {
   clear();
+  delete fake_root_;
 }
 
 template< class Key, class Value, class Compare >
@@ -131,10 +145,13 @@ burukov::BSTree< Key, Value, Compare >::operator=(BSTree&& other) noexcept
   if (this != std::addressof(other))
   {
     clear();
-    root_ = other.root_;
+    delete fake_root_;
+    fake_root_ = other.fake_root_;
+    fake_leaf_ = other.fake_leaf_;
     size_ = other.size_;
     comp_ = std::move(other.comp_);
-    other.root_ = Node::fakeLeaf;
+    other.fake_root_ = nullptr;
+    other.fake_leaf_ = nullptr;
     other.size_ = 0;
   }
   return *this;
@@ -143,7 +160,8 @@ burukov::BSTree< Key, Value, Compare >::operator=(BSTree&& other) noexcept
 template< class Key, class Value, class Compare >
 void burukov::BSTree< Key, Value, Compare >::swap(BSTree& other) noexcept
 {
-  std::swap(root_, other.root_);
+  std::swap(fake_root_, other.fake_root_);
+  std::swap(fake_leaf_, other.fake_leaf_);
   std::swap(size_, other.size_);
   std::swap(comp_, other.comp_);
 }
@@ -163,8 +181,8 @@ void burukov::BSTree< Key, Value, Compare >::deleteTree(Node* node)
 template< class Key, class Value, class Compare >
 void burukov::BSTree< Key, Value, Compare >::clear()
 {
-  deleteTree(root_);
-  root_ = Node::fakeLeaf;
+  deleteTree(fake_root_->right_);
+  fake_root_->right_ = fake_leaf_;
   size_ = 0;
 }
 
@@ -174,7 +192,7 @@ burukov::BSTree< Key, Value, Compare >::cloneTree(Node* src, Node* parent)
 {
   if (src == nullptr || src->isFake())
   {
-    return Node::fakeLeaf;
+    return fake_leaf_;
   }
   Node* n = new Node(src->key_, src->value_, parent);
   n->left_ = cloneTree(src->left_, n);
@@ -186,7 +204,7 @@ template< class Key, class Value, class Compare >
 burukov::detail::TreeNode< Key, Value >*
 burukov::BSTree< Key, Value, Compare >::findNode(const Key& k) const
 {
-  Node* cur = root_;
+  Node* cur = fake_root_->right_;
   while (cur != nullptr && !cur->isFake())
   {
     if (comp_(k, cur->key_))
@@ -236,15 +254,8 @@ Value& burukov::BSTree< Key, Value, Compare >::at(const Key& k)
 template< class Key, class Value, class Compare >
 void burukov::BSTree< Key, Value, Compare >::push(const Key& k, const Value& v)
 {
-  if (root_->isFake())
-  {
-    root_ = new Node(k, v, nullptr);
-    ++size_;
-    return;
-  }
-
-  Node* parent = nullptr;
-  Node* cur = root_;
+  Node* parent = fake_root_;
+  Node* cur = fake_root_->right_;
 
   while (cur != nullptr && !cur->isFake())
   {
@@ -279,15 +290,8 @@ void burukov::BSTree< Key, Value, Compare >::push(const Key& k, const Value& v)
 template< class Key, class Value, class Compare >
 void burukov::BSTree< Key, Value, Compare >::push(Key&& k, Value&& v)
 {
-  if (root_->isFake())
-  {
-    root_ = new Node(std::move(k), std::move(v), nullptr);
-    ++size_;
-    return;
-  }
-
-  Node* parent = nullptr;
-  Node* cur = root_;
+  Node* parent = fake_root_;
+  Node* cur = fake_root_->right_;
 
   while (cur != nullptr && !cur->isFake())
   {
@@ -325,7 +329,7 @@ burukov::BSTree< Key, Value, Compare >::leftmost(Node* node) const
 {
   if (node == nullptr || node->isFake())
   {
-    return Node::fakeLeaf;
+    return fake_leaf_;
   }
   while (node != nullptr && !node->left_->isFake())
   {
@@ -356,16 +360,12 @@ Value burukov::BSTree< Key, Value, Compare >::drop(const Key& k)
   Node* child = (!n->left_->isFake()) ? n->left_ : n->right_;
   if (child->isFake())
   {
-    child = Node::fakeLeaf;
+    child = fake_leaf_;
   }
 
-  if (n->parent_ == nullptr)
+  if (n->parent_ == fake_root_)
   {
-    root_ = child;
-    if (root_->isFake())
-    {
-      root_ = Node::fakeLeaf;
-    }
+    fake_root_->right_ = child;
   }
   else if (n == n->parent_->left_)
   {
@@ -376,7 +376,7 @@ Value burukov::BSTree< Key, Value, Compare >::drop(const Key& k)
     n->parent_->right_ = child;
   }
 
-  if (child != Node::fakeLeaf)
+  if (child != fake_leaf_)
   {
     child->parent_ = n->parent_;
   }
@@ -390,11 +390,11 @@ template< class Key, class Value, class Compare >
 typename burukov::BSTree< Key, Value, Compare >::iterator
 burukov::BSTree< Key, Value, Compare >::begin() const
 {
-  if (root_->isFake())
+  if (fake_root_->right_->isFake())
   {
     return iterator(nullptr);
   }
-  Node* l = leftmost(root_);
+  Node* l = leftmost(fake_root_->right_);
   if (l->isFake())
   {
     return iterator(nullptr);
@@ -417,7 +417,7 @@ size_t burukov::BSTree< Key, Value, Compare >::getHeight(Node* node) const
 template< class Key, class Value, class Compare >
 size_t burukov::BSTree< Key, Value, Compare >::height() const
 {
-  return getHeight(root_);
+  return getHeight(fake_root_->right_);
 }
 
 template< class Key, class Value, class Compare >
@@ -434,13 +434,9 @@ size_t burukov::BSTree< Key, Value, Compare >::height(iterator it) const
 template< class Key, class Value, class Compare >
 void burukov::BSTree< Key, Value, Compare >::transplant(Node* u, Node* v)
 {
-  if (u->parent_ == nullptr)
+  if (u->parent_ == fake_root_)
   {
-    root_ = v;
-    if (root_->isFake())
-    {
-      root_ = Node::fakeLeaf;
-    }
+    fake_root_->right_ = v;
   }
   else if (u == u->parent_->left_)
   {
@@ -450,7 +446,7 @@ void burukov::BSTree< Key, Value, Compare >::transplant(Node* u, Node* v)
   {
     u->parent_->right_ = v;
   }
-  if (v != Node::fakeLeaf)
+  if (v != fake_leaf_)
   {
     v->parent_ = u->parent_;
   }
