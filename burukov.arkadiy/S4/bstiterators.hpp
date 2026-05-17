@@ -57,26 +57,32 @@ template< class Key, class Value >
 burukov::detail::BSTIterator< Key, Value >&
 burukov::detail::BSTIterator< Key, Value >::operator++()
 {
-  if (node_->right_->isFake())
+  if (node_ == nullptr || node_->isFake())
+  {
+    node_ = nullptr;
+    return *this;
+  }
+
+  if (!node_->right_->isFake())
+  {
+    node_ = node_->right_;
+    while (node_ != nullptr && !node_->left_->isFake())
+    {
+      node_ = node_->left_;
+    }
+  }
+  else
   {
     Node* p = node_->parent_;
-    while (!p->isFake() && node_ == p->right_)
+    while (p != nullptr && !p->isFake() && node_ == p->right_)
     {
       node_ = p;
       p = p->parent_;
     }
     node_ = p;
-    if (node_->isFake())
+    if (node_ != nullptr && node_->isFake())
     {
       node_ = nullptr;
-    }
-  }
-  else
-  {
-    node_ = node_->right_;
-    while (!node_->left_->isFake())
-    {
-      node_ = node_->left_;
     }
   }
   return *this;
@@ -99,26 +105,27 @@ burukov::detail::BSTIterator< Key, Value >::operator--()
   {
     return *this;
   }
-  if (node_->left_->isFake())
+
+  if (!node_->left_->isFake())
+  {
+    node_ = node_->left_;
+    while (node_ != nullptr && !node_->right_->isFake())
+    {
+      node_ = node_->right_;
+    }
+  }
+  else
   {
     Node* p = node_->parent_;
-    while (!p->isFake() && node_ == p->left_)
+    while (p != nullptr && !p->isFake() && node_ == p->left_)
     {
       node_ = p;
       p = p->parent_;
     }
     node_ = p;
-    if (node_->isFake())
+    if (node_ != nullptr && node_->isFake())
     {
       node_ = nullptr;
-    }
-  }
-  else
-  {
-    node_ = node_->left_;
-    while (!node_->right_->isFake())
-    {
-      node_ = node_->right_;
     }
   }
   return *this;

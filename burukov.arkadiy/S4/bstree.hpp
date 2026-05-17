@@ -324,6 +324,10 @@ template< class Key, class Value, class Compare >
 burukov::detail::TreeNode< Key, Value >*
 burukov::BSTree< Key, Value, Compare >::leftmost(Node* node) const
 {
+  if (node == nullptr || node->isFake())
+  {
+    return Node::fakeLeaf;
+  }
   while (node != nullptr && !node->left_->isFake())
   {
     node = node->left_;
@@ -391,7 +395,12 @@ burukov::BSTree< Key, Value, Compare >::begin() const
   {
     return iterator(nullptr);
   }
-  return iterator(leftmost(root_));
+  Node* l = leftmost(root_);
+  if (l->isFake())
+  {
+    return iterator(nullptr);
+  }
+  return iterator(l);
 }
 
 template< class Key, class Value, class Compare >
@@ -415,7 +424,12 @@ size_t burukov::BSTree< Key, Value, Compare >::height() const
 template< class Key, class Value, class Compare >
 size_t burukov::BSTree< Key, Value, Compare >::height(iterator it) const
 {
-  return getHeight(it.getNode());
+  Node* n = it.getNode();
+  if (n == nullptr)
+  {
+    return 0;
+  }
+  return getHeight(n);
 }
 
 template< class Key, class Value, class Compare >
@@ -448,7 +462,7 @@ typename burukov::BSTree< Key, Value, Compare >::iterator
 burukov::BSTree< Key, Value, Compare >::rotateLeft(iterator it)
 {
   Node* y = it.getNode();
-  if (y->isFake() || y->right_->isFake())
+  if (y == nullptr || y->isFake() || y->right_->isFake())
   {
     return it;
   }
@@ -472,7 +486,7 @@ typename burukov::BSTree< Key, Value, Compare >::iterator
 burukov::BSTree< Key, Value, Compare >::rotateRight(iterator it)
 {
   Node* x = it.getNode();
-  if (x->isFake() || x->left_->isFake())
+  if (x == nullptr || x->isFake() || x->left_->isFake())
   {
     return it;
   }
@@ -496,7 +510,7 @@ typename burukov::BSTree< Key, Value, Compare >::iterator
 burukov::BSTree< Key, Value, Compare >::rotateLargeLeft(iterator it)
 {
   Node* node = it.getNode();
-  if (node->isFake() || node->left_->isFake() || node->left_->right_->isFake())
+  if (node == nullptr || node->isFake() || node->left_->isFake() || node->left_->right_->isFake())
   {
     return it;
   }
@@ -510,7 +524,7 @@ typename burukov::BSTree< Key, Value, Compare >::iterator
 burukov::BSTree< Key, Value, Compare >::rotateLargeRight(iterator it)
 {
   Node* node = it.getNode();
-  if (node->isFake() || node->right_->isFake() || node->right_->left_->isFake())
+  if (node == nullptr || node->isFake() || node->right_->isFake() || node->right_->left_->isFake())
   {
     return it;
   }
