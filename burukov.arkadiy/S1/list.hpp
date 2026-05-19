@@ -7,6 +7,9 @@
 
 namespace burukov
 {
+  template< class T >
+  class List;
+
   namespace detail
   {
     template< class T >
