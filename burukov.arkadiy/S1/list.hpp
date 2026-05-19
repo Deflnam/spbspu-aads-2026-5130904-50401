@@ -41,6 +41,8 @@ namespace burukov
     bool operator==(const LIter< T > &rhs) const;
     bool operator!=(const LIter< T > &rhs) const;
 
+    detail::Node< T > *getNode() const;
+
   private:
     detail::Node< T > *ptr_;
 
@@ -103,9 +105,40 @@ namespace burukov
     LCIter< T > cbegin() const;
     LCIter< T > cend() const;
 
+    
+
+    void splice(LIter< T > pos, List< T > &other);
+    void splice(LIter< T > pos, List< T > &other, LIter< T > it);
+    void splice(LIter< T > pos, List< T > &other, LIter< T > first, LIter< T > last);
+
+    void sort();
+    template< class Compare >
+    void sort(Compare comp);
+
+    void merge(List< T > &other);
+    template< class Compare >
+    void merge(List< T > &other, Compare comp);
+
+    LIter< T > partition(bool (*pred)(const T &));
+    template< class Predicate >
+    LIter< T > partition(Predicate pred);
+
   private:
     detail::Node< T > *head_;
     size_t size_;
+
+    detail::Node< T > *getNodeBefore(LIter< T > it) const;
+    LIter< T > findMiddle(LIter< T > start, LIter< T > end) const;
+    LIter< T > mergeSorted(LIter< T > firstStart, LIter< T > firstEnd,
+                           LIter< T > secondStart, LIter< T > secondEnd,
+                           LIter< T > resultPrev);
+    template< class Compare >
+    LIter< T > mergeSorted(LIter< T > firstStart, LIter< T > firstEnd,
+                           LIter< T > secondStart, LIter< T > secondEnd,
+                           LIter< T > resultPrev, Compare comp);
+    void sortImpl(LIter< T > start, LIter< T > end, LIter< T > prev);
+    template< class Compare >
+    void sortImpl(LIter< T > start, LIter< T > end, LIter< T > prev, Compare comp);
   };
 }
 namespace burukov
@@ -159,6 +192,12 @@ namespace burukov
   bool LIter< T >::operator!=(const LIter< T > &rhs) const
   {
     return ptr_ != rhs.ptr_;
+  }
+
+  template< class T >
+  detail::Node< T > *LIter< T >::getNode() const
+  {
+    return ptr_;
   }
 
   template< class T >
@@ -333,8 +372,8 @@ namespace burukov
   template< class U >
   LIter< T > List< T >::insertAfter(LIter< T > pos, U &&val)
   {
-    detail::Node< T > *created = new detail::Node< T >(std::forward< U >(val), pos.ptr_->next_);
-    pos.ptr_->next_ = created;
+    detail::Node< T > *created = new detail::Node< T >(std::forward< U >(val), pos.getNode()->next_);
+    pos.getNode()->next_ = created;
     ++size_;
     return LIter< T >(created);
   }
@@ -342,11 +381,11 @@ namespace burukov
   template< class T >
   LIter< T > List< T >::eraseAfter(LIter< T > pos)
   {
-    detail::Node< T > *victim = pos.ptr_->next_;
-    pos.ptr_->next_ = victim->next_;
+    detail::Node< T > *victim = pos.getNode()->next_;
+    pos.getNode()->next_ = victim->next_;
     delete victim;
     --size_;
-    return LIter< T >(pos.ptr_->next_);
+    return LIter< T >(pos.getNode()->next_);
   }
 
   template< class T >
@@ -390,6 +429,358 @@ namespace burukov
   LCIter< T > List< T >::cend() const
   {
     return LCIter< T >(nullptr);
+  }
+
+  template< class T >
+  detail::Node< T > *List< T >::getNodeBefore(LIter< T > it) const
+  {
+    if (it == begin())
+    {
+      return nullptr;
+    }
+    detail::Node< T > *prev = head_;
+    while (prev && prev->next_ != it.getNode())
+    {
+      prev = prev->next_;
+    }
+    return prev;
+  }
+
+  template< class T >
+  LIter< T > List< T >::findMiddle(LIter< T > start, LIter< T > end) const
+  {
+    if (start == end)
+    {
+      return end;
+    }
+    LIter< T > slow = start;
+    LIter< T > fast = start;
+    while (fast != end && fast.getNode()->next_ != end.getNode())
+    {
+      ++slow;
+      ++fast;
+      if (fast != end)
+      {
+        ++fast;
+      }
+    }
+    return slow;
+  }
+
+  template< class T >
+  void List< T >::splice(LIter< T > pos, List< T > &other)
+  {
+    if (other.empty())
+    {
+      return;
+    }
+    if (pos == begin())
+    {
+      detail::Node< T > *otherTail = other.head_;
+      while (otherTail->next_)
+      {
+        otherTail = otherTail->next_;
+      }
+      otherTail->next_ = head_;
+      head_ = other.head_;
+    }
+    else
+    {
+      detail::Node< T > *prev = getNodeBefore(pos);
+      detail::Node< T > *otherTail = other.head_;
+      while (otherTail->next_)
+      {
+        otherTail = otherTail->next_;
+      }
+      otherTail->next_ = prev->next_;
+      prev->next_ = other.head_;
+    }
+    size_ += other.size_;
+    other.head_ = nullptr;
+    other.size_ = 0;
+  }
+
+  template< class T >
+  void List< T >::splice(LIter< T > pos, List< T > &other, LIter< T > it)
+  {
+    if (other.empty())
+    {
+      return;
+    }
+    detail::Node< T > *node = it.getNode();
+    detail::Node< T > *prev = other.getNodeBefore(it);
+    if (prev)
+    {
+      prev->next_ = node->next_;
+    }
+    else
+    {
+      other.head_ = node->next_;
+    }
+    if (pos == begin())
+    {
+      node->next_ = head_;
+      head_ = node;
+    }
+    else
+    {
+      detail::Node< T > *posPrev = getNodeBefore(pos);
+      node->next_ = posPrev->next_;
+      posPrev->next_ = node;
+    }
+    ++size_;
+    --other.size_;
+  }
+
+  template< class T >
+  void List< T >::splice(LIter< T > pos, List< T > &other, LIter< T > first, LIter< T > last)
+  {
+    if (first == last || other.empty())
+    {
+      return;
+    }
+    detail::Node< T > *firstNode = first.getNode();
+    detail::Node< T > *lastNode = last.getNode();
+    detail::Node< T > *prevFirst = other.getNodeBefore(first);
+    size_t count = 0;
+    for (LIter< T > it = first; it != last; ++it)
+    {
+      ++count;
+    }
+    if (prevFirst)
+    {
+      prevFirst->next_ = lastNode;
+    }
+    else
+    {
+      other.head_ = lastNode;
+    }
+    if (pos == begin())
+    {
+      detail::Node< T > *tail = firstNode;
+      while (tail->next_ != lastNode)
+      {
+        tail = tail->next_;
+      }
+      tail->next_ = head_;
+      head_ = firstNode;
+    }
+    else
+    {
+      detail::Node< T > *posPrev = getNodeBefore(pos);
+      detail::Node< T > *tail = firstNode;
+      while (tail->next_ != lastNode)
+      {
+        tail = tail->next_;
+      }
+      tail->next_ = posPrev->next_;
+      posPrev->next_ = firstNode;
+    }
+    size_ += count;
+    other.size_ -= count;
+  }
+
+  template< class T >
+  LIter< T > List< T >::mergeSorted(LIter< T > firstStart, LIter< T > firstEnd,
+                                     LIter< T > secondStart, LIter< T > secondEnd,
+                                     LIter< T > resultPrev)
+  {
+    return mergeSorted(firstStart, firstEnd, secondStart, secondEnd, resultPrev,
+                       std::less< T >());
+  }
+
+  template< class T >
+  template< class Compare >
+  LIter< T > List< T >::mergeSorted(LIter< T > firstStart, LIter< T > firstEnd,
+                                     LIter< T > secondStart, LIter< T > secondEnd,
+                                     LIter< T > resultPrev, Compare comp)
+  {
+    LIter< T > current = resultPrev;
+    LIter< T > first = firstStart;
+    LIter< T > second = secondStart;
+    while (first != firstEnd && second != secondEnd)
+    {
+      if (comp(first.getNode()->val_, second.getNode()->val_))
+      {
+        current.getNode()->next_ = first.getNode();
+        first = LIter< T >(first.getNode()->next_);
+      }
+      else
+      {
+        current.getNode()->next_ = second.getNode();
+        second = LIter< T >(second.getNode()->next_);
+      }
+      current = LIter< T >(current.getNode()->next_);
+    }
+    while (first != firstEnd)
+    {
+      current.getNode()->next_ = first.getNode();
+      first = LIter< T >(first.getNode()->next_);
+      current = LIter< T >(current.getNode()->next_);
+    }
+    while (second != secondEnd)
+    {
+      current.getNode()->next_ = second.getNode();
+      second = LIter< T >(second.getNode()->next_);
+      current = LIter< T >(current.getNode()->next_);
+    }
+    current.getNode()->next_ = secondEnd.getNode();
+    return current;
+  }
+
+  template< class T >
+  void List< T >::merge(List< T > &other)
+  {
+    merge(other, std::less< T >());
+  }
+
+  template< class T >
+  template< class Compare >
+  void List< T >::merge(List< T > &other, Compare comp)
+  {
+    if (this == &other || other.empty())
+    {
+      return;
+    }
+    detail::Node< T > dummy;
+    dummy.next_ = head_;
+    detail::Node< T > *tail = &dummy;
+    detail::Node< T > *first = head_;
+    detail::Node< T > *second = other.head_;
+    while (first && second)
+    {
+      if (comp(first->val_, second->val_))
+      {
+        tail->next_ = first;
+        first = first->next_;
+      }
+      else
+      {
+        tail->next_ = second;
+        second = second->next_;
+      }
+      tail = tail->next_;
+    }
+    tail->next_ = first ? first : second;
+    head_ = dummy.next_;
+    size_ += other.size_;
+    other.head_ = nullptr;
+    other.size_ = 0;
+  }
+
+  template< class T >
+  void List< T >::sortImpl(LIter< T > start, LIter< T > end, LIter< T > prev)
+  {
+    sortImpl(start, end, prev, std::less< T >());
+  }
+
+  template< class T >
+  template< class Compare >
+  void List< T >::sortImpl(LIter< T > start, LIter< T > end, LIter< T > prev, Compare comp)
+  {
+    if (start == end || start.getNode()->next_ == end.getNode())
+    {
+      return;
+    }
+    LIter< T > middle = findMiddle(start, end);
+    LIter< T > nextAfterMiddle = LIter< T >(middle.getNode()->next_);
+    sortImpl(start, nextAfterMiddle, prev, comp);
+    sortImpl(nextAfterMiddle, end, middle, comp);
+    mergeSorted(start, nextAfterMiddle, nextAfterMiddle, end, prev, comp);
+  }
+
+  template< class T >
+  void List< T >::sort()
+  {
+    sort(std::less< T >());
+  }
+
+  template< class T >
+  template< class Compare >
+  void List< T >::sort(Compare comp)
+  {
+    if (size_ < 2)
+    {
+      return;
+    }
+    detail::Node< T > dummy;
+    dummy.next_ = head_;
+    LIter< T > prev(&dummy);
+    sortImpl(begin(), end(), prev, comp);
+    head_ = dummy.next_;
+  }
+  
+  template< class T >
+  LIter< T > List< T >::partition(bool (*pred)(const T &))
+  {
+    return partition(static_cast< bool (*)(const T &) >(pred));
+  }
+
+  template< class T >
+  template< class Predicate >
+  LIter< T > List< T >::partition(Predicate pred)
+  {
+    if (!head_)
+    {
+      return end();
+    }
+    List< T > trueList;
+    List< T > falseList;
+    while (head_)
+    {
+      detail::Node< T > *node = head_;
+      head_ = head_->next_;
+      node->next_ = nullptr;
+      if (pred(node->val_))
+      {
+        if (!trueList.head_)
+        {
+          trueList.head_ = node;
+        }
+        else
+        {
+          detail::Node< T > *tail = trueList.head_;
+          while (tail->next_)
+          {
+            tail = tail->next_;
+          }
+          tail->next_ = node;
+        }
+        ++trueList.size_;
+      }
+      else
+      {
+        if (!falseList.head_)
+        {
+          falseList.head_ = node;
+        }
+        else
+        {
+          detail::Node< T > *tail = falseList.head_;
+          while (tail->next_)
+          {
+            tail = tail->next_;
+          }
+          tail->next_ = node;
+        }
+        ++falseList.size_;
+      }
+    }
+    if (!trueList.empty())
+    {
+      detail::Node< T > *trueTail = trueList.head_;
+      while (trueTail->next_)
+      {
+        trueTail = trueTail->next_;
+      }
+      trueTail->next_ = falseList.head_;
+      head_ = trueList.head_;
+      size_ = trueList.size_ + falseList.size_;
+      return LIter< T >(trueList.head_);
+    }
+    head_ = falseList.head_;
+    size_ = falseList.size_;
+    return LIter< T >(falseList.head_);
   }
 }
 
