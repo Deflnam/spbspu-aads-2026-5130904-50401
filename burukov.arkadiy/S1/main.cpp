@@ -8,6 +8,36 @@ namespace burukov
 {
   using pair_t = std::pair< std::string, List< unsigned long long > >;
 
+  template< class Container >
+  void printContainer(std::ostream &out, const Container &c)
+  {
+    auto it = c.begin();
+    if (it != c.end())
+    {
+      out << *it;
+      ++it;
+    }
+    for (; it != c.end(); ++it)
+    {
+      out << " " << *it;
+    }
+  }
+
+  template< class Container >
+  void printPairFirst(std::ostream &out, const Container &c)
+  {
+    auto it = c.begin();
+    if (it != c.end())
+    {
+      out << it->first;
+      ++it;
+    }
+    for (; it != c.end(); ++it)
+    {
+      out << " " << it->first;
+    }
+  }
+
   void readSequences(std::istream &in, List< pair_t > &seqs)
   {
     LIter< pair_t > seqsTail;
@@ -51,16 +81,7 @@ namespace burukov
 
   void printNames(std::ostream &out, const List< pair_t > &seqs)
   {
-    auto it = seqs.cbegin();
-    if (it != seqs.cend())
-    {
-      out << it->first;
-      ++it;
-    }
-    for (; it != seqs.cend(); ++it)
-    {
-      out << " " << it->first;
-    }
+    printPairFirst(out, seqs);
   }
 
   size_t getMaxLen(const List< pair_t > &seqs)
@@ -79,16 +100,7 @@ namespace burukov
 
   void printRow(std::ostream &out, const List< unsigned long long > &row)
   {
-    auto it = row.cbegin();
-    if (it != row.cend())
-    {
-      out << *it;
-      ++it;
-    }
-    for (; it != row.cend(); ++it)
-    {
-      out << " " << *it;
-    }
+    printContainer(out, row);
   }
 
   void collectIters(List< pair_t > &seqs, List< LIter< unsigned long long > > &iters)
@@ -209,7 +221,7 @@ namespace burukov
 
     for (auto it = rows.begin(); it != rows.end(); ++it)
     {
-      printRow(out, *it);
+      printContainer(out, *it);
       out << "\n";
     }
 
@@ -219,16 +231,7 @@ namespace burukov
       return 1;
     }
 
-    auto it = sums.begin();
-    if (it != sums.end())
-    {
-      out << *it;
-      ++it;
-    }
-    for (; it != sums.end(); ++it)
-    {
-      out << " " << *it;
-    }
+    printContainer(out, sums);
     out << "\n";
     return 0;
   }

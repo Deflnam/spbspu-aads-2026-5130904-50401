@@ -85,12 +85,14 @@ namespace burukov
     T &front();
     const T &front() const;
 
-    void pushFront(const T &val);
-    void pushFront(T &&val);
+    template< class U >
+    void pushFront(U &&val);
+
     void popFront();
 
-    LIter< T > insertAfter(LIter< T > pos, const T &val);
-    LIter< T > insertAfter(LIter< T > pos, T &&val);
+    template< class U >
+    LIter< T > insertAfter(LIter< T > pos, U &&val);
+
     LIter< T > eraseAfter(LIter< T > pos);
 
     void clear();
@@ -311,16 +313,10 @@ namespace burukov
   }
 
   template< class T >
-  void List< T >::pushFront(const T &val)
+  template< class U >
+  void List< T >::pushFront(U &&val)
   {
-    head_ = new detail::Node< T >(val, head_);
-    ++size_;
-  }
-
-  template< class T >
-  void List< T >::pushFront(T &&val)
-  {
-    head_ = new detail::Node< T >(std::move(val), head_);
+    head_ = new detail::Node< T >(std::forward< U >(val), head_);
     ++size_;
   }
 
@@ -334,18 +330,10 @@ namespace burukov
   }
 
   template< class T >
-  LIter< T > List< T >::insertAfter(LIter< T > pos, const T &val)
+  template< class U >
+  LIter< T > List< T >::insertAfter(LIter< T > pos, U &&val)
   {
-    detail::Node< T > *created = new detail::Node< T >(val, pos.ptr_->next_);
-    pos.ptr_->next_ = created;
-    ++size_;
-    return LIter< T >(created);
-  }
-
-  template< class T >
-  LIter< T > List< T >::insertAfter(LIter< T > pos, T &&val)
-  {
-    detail::Node< T > *created = new detail::Node< T >(std::move(val), pos.ptr_->next_);
+    detail::Node< T > *created = new detail::Node< T >(std::forward< U >(val), pos.ptr_->next_);
     pos.ptr_->next_ = created;
     ++size_;
     return LIter< T >(created);
