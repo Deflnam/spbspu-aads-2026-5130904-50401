@@ -11,13 +11,13 @@ namespace burukov
   template< class Container >
   void printContainer(std::ostream &out, const Container &c)
   {
-    auto it = c.begin();
-    if (it != c.end())
+    auto it = c.cbegin();
+    if (it != c.cend())
     {
       out << *it;
       ++it;
     }
-    for (; it != c.end(); ++it)
+    for (; it != c.cend(); ++it)
     {
       out << " " << *it;
     }
@@ -26,13 +26,13 @@ namespace burukov
   template< class Container >
   void printPairFirst(std::ostream &out, const Container &c)
   {
-    auto it = c.begin();
-    if (it != c.end())
+    auto it = c.cbegin();
+    if (it != c.cend())
     {
       out << it->first;
       ++it;
     }
-    for (; it != c.end(); ++it)
+    for (; it != c.cend(); ++it)
     {
       out << " " << it->first;
     }
