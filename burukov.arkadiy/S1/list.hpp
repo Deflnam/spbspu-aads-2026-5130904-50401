@@ -18,6 +18,11 @@ namespace burukov
     {
       T val_;
       Node< T > *next_;
+      Node() :
+        val_(),
+        next_(nullptr)
+      {
+      }
 
       template< class U >
       Node(U &&value, Node< T > *next = nullptr) :
@@ -140,6 +145,7 @@ namespace burukov
     void sortImpl(LIter< T > start, LIter< T > end, LIter< T > prev, Compare comp);
   };
 }
+
 namespace burukov
 {
   template< class T >
@@ -433,7 +439,7 @@ namespace burukov
   template< class T >
   detail::Node< T > *List< T >::getNodeBefore(LIter< T > it) const
   {
-    if (it == begin())
+    if (it == cbegin())
     {
       return nullptr;
     }
