@@ -18,8 +18,12 @@ namespace burukov
       T val_;
       Node< T > *next_;
 
-      Node(const T &value, Node< T > *next);
-      Node(T &&value, Node< T > *next);
+      template< class U >
+      Node(U &&value, Node< T > *next = nullptr) :
+        val_(std::forward< U >(value)),
+        next_(next)
+      {
+      }
     };
   }
 
@@ -104,23 +108,6 @@ namespace burukov
 }
 namespace burukov
 {
-  namespace detail
-  {
-    template< class T >
-    Node< T >::Node(const T &value, Node< T > *next) :
-      val_(value),
-      next_(next)
-    {
-    }
-
-    template< class T >
-    Node< T >::Node(T &&value, Node< T > *next) :
-      val_(std::move(value)),
-      next_(next)
-    {
-    }
-  }
-
   template< class T >
   LIter< T >::LIter() :
     ptr_(nullptr)
