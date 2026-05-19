@@ -105,7 +105,7 @@ namespace burukov
     LCIter< T > cbegin() const;
     LCIter< T > cend() const;
 
-    
+
 
     void splice(LIter< T > pos, List< T > &other);
     void splice(LIter< T > pos, List< T > &other, LIter< T > it);
@@ -709,7 +709,7 @@ namespace burukov
     sortImpl(begin(), end(), prev, comp);
     head_ = dummy.next_;
   }
-  
+
   template< class T >
   LIter< T > List< T >::partition(bool (*pred)(const T &))
   {
