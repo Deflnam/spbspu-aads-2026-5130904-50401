@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <utility>
 #include <algorithm>
+#include <functional>
 
 namespace burukov
 {
@@ -104,8 +105,6 @@ namespace burukov
     LIter< T > end();
     LCIter< T > cbegin() const;
     LCIter< T > cend() const;
-
-
 
     void splice(LIter< T > pos, List< T > &other);
     void splice(LIter< T > pos, List< T > &other, LIter< T > it);
@@ -585,8 +584,37 @@ namespace burukov
                                      LIter< T > secondStart, LIter< T > secondEnd,
                                      LIter< T > resultPrev)
   {
-    return mergeSorted(firstStart, firstEnd, secondStart, secondEnd, resultPrev,
-                       std::less< T >());
+    LIter< T > current = resultPrev;
+    LIter< T > first = firstStart;
+    LIter< T > second = secondStart;
+    while (first != firstEnd && second != secondEnd)
+    {
+      if (first.getNode()->val_ <= second.getNode()->val_)
+      {
+        current.getNode()->next_ = first.getNode();
+        first = LIter< T >(first.getNode()->next_);
+      }
+      else
+      {
+        current.getNode()->next_ = second.getNode();
+        second = LIter< T >(second.getNode()->next_);
+      }
+      current = LIter< T >(current.getNode()->next_);
+    }
+    while (first != firstEnd)
+    {
+      current.getNode()->next_ = first.getNode();
+      first = LIter< T >(first.getNode()->next_);
+      current = LIter< T >(current.getNode()->next_);
+    }
+    while (second != secondEnd)
+    {
+      current.getNode()->next_ = second.getNode();
+      second = LIter< T >(second.getNode()->next_);
+      current = LIter< T >(current.getNode()->next_);
+    }
+    current.getNode()->next_ = secondEnd.getNode();
+    return current;
   }
 
   template< class T >
@@ -631,7 +659,34 @@ namespace burukov
   template< class T >
   void List< T >::merge(List< T > &other)
   {
-    merge(other, std::less< T >());
+    if (this == &other || other.empty())
+    {
+      return;
+    }
+    detail::Node< T > dummy;
+    dummy.next_ = head_;
+    detail::Node< T > *tail = &dummy;
+    detail::Node< T > *first = head_;
+    detail::Node< T > *second = other.head_;
+    while (first && second)
+    {
+      if (first->val_ <= second->val_)
+      {
+        tail->next_ = first;
+        first = first->next_;
+      }
+      else
+      {
+        tail->next_ = second;
+        second = second->next_;
+      }
+      tail = tail->next_;
+    }
+    tail->next_ = first ? first : second;
+    head_ = dummy.next_;
+    size_ += other.size_;
+    other.head_ = nullptr;
+    other.size_ = 0;
   }
 
   template< class T >
@@ -671,7 +726,15 @@ namespace burukov
   template< class T >
   void List< T >::sortImpl(LIter< T > start, LIter< T > end, LIter< T > prev)
   {
-    sortImpl(start, end, prev, std::less< T >());
+    if (start == end || start.getNode()->next_ == end.getNode())
+    {
+      return;
+    }
+    LIter< T > middle = findMiddle(start, end);
+    LIter< T > nextAfterMiddle = LIter< T >(middle.getNode()->next_);
+    sortImpl(start, nextAfterMiddle, prev);
+    sortImpl(nextAfterMiddle, end, middle);
+    mergeSorted(start, nextAfterMiddle, nextAfterMiddle, end, prev);
   }
 
   template< class T >
@@ -692,7 +755,15 @@ namespace burukov
   template< class T >
   void List< T >::sort()
   {
-    sort(std::less< T >());
+    if (size_ < 2)
+    {
+      return;
+    }
+    detail::Node< T > dummy;
+    dummy.next_ = head_;
+    LIter< T > prev(&dummy);
+    sortImpl(begin(), end(), prev);
+    head_ = dummy.next_;
   }
 
   template< class T >
