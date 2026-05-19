@@ -18,6 +18,7 @@ namespace burukov
     {
       T val_;
       Node< T > *next_;
+
       Node() :
         val_(),
         next_(nullptr)
@@ -131,7 +132,7 @@ namespace burukov
     detail::Node< T > *head_;
     size_t size_;
 
-    detail::Node< T > *getNodeBefore(LIter< T > it) const;
+    detail::Node< T > *getNodeBefore(LIter< T > it);
     LIter< T > findMiddle(LIter< T > start, LIter< T > end) const;
     LIter< T > mergeSorted(LIter< T > firstStart, LIter< T > firstEnd,
                            LIter< T > secondStart, LIter< T > secondEnd,
@@ -437,9 +438,9 @@ namespace burukov
   }
 
   template< class T >
-  detail::Node< T > *List< T >::getNodeBefore(LIter< T > it) const
+  detail::Node< T > *List< T >::getNodeBefore(LIter< T > it)
   {
-    if (it == cbegin())
+    if (it == begin())
     {
       return nullptr;
     }
@@ -790,7 +791,7 @@ namespace burukov
   template< class T >
   LIter< T > List< T >::partition(bool (*pred)(const T &))
   {
-    return partition(static_cast< bool (*)(const T &) >(pred));
+    return partition(pred);
   }
 
   template< class T >
