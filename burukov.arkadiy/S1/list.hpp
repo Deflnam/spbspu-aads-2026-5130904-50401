@@ -133,17 +133,6 @@ namespace burukov
     size_t size_;
 
     detail::Node< T > *getNodeBefore(LIter< T > it);
-    LIter< T > findMiddle(LIter< T > start, LIter< T > end) const;
-    LIter< T > mergeSorted(LIter< T > firstStart, LIter< T > firstEnd,
-                           LIter< T > secondStart, LIter< T > secondEnd,
-                           LIter< T > resultPrev);
-    template< class Compare >
-    LIter< T > mergeSorted(LIter< T > firstStart, LIter< T > firstEnd,
-                           LIter< T > secondStart, LIter< T > secondEnd,
-                           LIter< T > resultPrev, Compare comp);
-    void sortImpl(LIter< T > start, LIter< T > end, LIter< T > prev);
-    template< class Compare >
-    void sortImpl(LIter< T > start, LIter< T > end, LIter< T > prev, Compare comp);
   };
 }
 
@@ -453,27 +442,6 @@ namespace burukov
   }
 
   template< class T >
-  LIter< T > List< T >::findMiddle(LIter< T > start, LIter< T > end) const
-  {
-    if (start == end)
-    {
-      return end;
-    }
-    LIter< T > slow = start;
-    LIter< T > fast = start;
-    while (fast != end && fast.getNode()->next_ != end.getNode())
-    {
-      ++slow;
-      ++fast;
-      if (fast != end)
-      {
-        ++fast;
-      }
-    }
-    return slow;
-  }
-
-  template< class T >
   void List< T >::splice(LIter< T > pos, List< T > &other)
   {
     if (other.empty())
@@ -587,83 +555,6 @@ namespace burukov
   }
 
   template< class T >
-  LIter< T > List< T >::mergeSorted(LIter< T > firstStart, LIter< T > firstEnd,
-                                     LIter< T > secondStart, LIter< T > secondEnd,
-                                     LIter< T > resultPrev)
-  {
-    LIter< T > current = resultPrev;
-    LIter< T > first = firstStart;
-    LIter< T > second = secondStart;
-    while (first != firstEnd && second != secondEnd)
-    {
-      if (first.getNode()->val_ <= second.getNode()->val_)
-      {
-        current.getNode()->next_ = first.getNode();
-        first = LIter< T >(first.getNode()->next_);
-      }
-      else
-      {
-        current.getNode()->next_ = second.getNode();
-        second = LIter< T >(second.getNode()->next_);
-      }
-      current = LIter< T >(current.getNode()->next_);
-    }
-    while (first != firstEnd)
-    {
-      current.getNode()->next_ = first.getNode();
-      first = LIter< T >(first.getNode()->next_);
-      current = LIter< T >(current.getNode()->next_);
-    }
-    while (second != secondEnd)
-    {
-      current.getNode()->next_ = second.getNode();
-      second = LIter< T >(second.getNode()->next_);
-      current = LIter< T >(current.getNode()->next_);
-    }
-    current.getNode()->next_ = secondEnd.getNode();
-    return current;
-  }
-
-  template< class T >
-  template< class Compare >
-  LIter< T > List< T >::mergeSorted(LIter< T > firstStart, LIter< T > firstEnd,
-                                     LIter< T > secondStart, LIter< T > secondEnd,
-                                     LIter< T > resultPrev, Compare comp)
-  {
-    LIter< T > current = resultPrev;
-    LIter< T > first = firstStart;
-    LIter< T > second = secondStart;
-    while (first != firstEnd && second != secondEnd)
-    {
-      if (comp(first.getNode()->val_, second.getNode()->val_))
-      {
-        current.getNode()->next_ = first.getNode();
-        first = LIter< T >(first.getNode()->next_);
-      }
-      else
-      {
-        current.getNode()->next_ = second.getNode();
-        second = LIter< T >(second.getNode()->next_);
-      }
-      current = LIter< T >(current.getNode()->next_);
-    }
-    while (first != firstEnd)
-    {
-      current.getNode()->next_ = first.getNode();
-      first = LIter< T >(first.getNode()->next_);
-      current = LIter< T >(current.getNode()->next_);
-    }
-    while (second != secondEnd)
-    {
-      current.getNode()->next_ = second.getNode();
-      second = LIter< T >(second.getNode()->next_);
-      current = LIter< T >(current.getNode()->next_);
-    }
-    current.getNode()->next_ = secondEnd.getNode();
-    return current;
-  }
-
-  template< class T >
   void List< T >::merge(List< T > &other)
   {
     if (this == &other || other.empty())
@@ -731,46 +622,9 @@ namespace burukov
   }
 
   template< class T >
-  void List< T >::sortImpl(LIter< T > start, LIter< T > end, LIter< T > prev)
-  {
-    if (start == end || start.getNode()->next_ == end.getNode())
-    {
-      return;
-    }
-    LIter< T > middle = findMiddle(start, end);
-    LIter< T > nextAfterMiddle = LIter< T >(middle.getNode()->next_);
-    sortImpl(start, nextAfterMiddle, prev);
-    sortImpl(nextAfterMiddle, end, middle);
-    mergeSorted(start, nextAfterMiddle, nextAfterMiddle, end, prev);
-  }
-
-  template< class T >
-  template< class Compare >
-  void List< T >::sortImpl(LIter< T > start, LIter< T > end, LIter< T > prev, Compare comp)
-  {
-    if (start == end || start.getNode()->next_ == end.getNode())
-    {
-      return;
-    }
-    LIter< T > middle = findMiddle(start, end);
-    LIter< T > nextAfterMiddle = LIter< T >(middle.getNode()->next_);
-    sortImpl(start, nextAfterMiddle, prev, comp);
-    sortImpl(nextAfterMiddle, end, middle, comp);
-    mergeSorted(start, nextAfterMiddle, nextAfterMiddle, end, prev, comp);
-  }
-
-  template< class T >
   void List< T >::sort()
   {
-    if (size_ < 2)
-    {
-      return;
-    }
-    detail::Node< T > dummy;
-    dummy.next_ = head_;
-    LIter< T > prev(&dummy);
-    sortImpl(begin(), end(), prev);
-    head_ = dummy.next_;
+    sort(std::less< T >());
   }
 
   template< class T >
@@ -781,11 +635,89 @@ namespace burukov
     {
       return;
     }
-    detail::Node< T > dummy;
-    dummy.next_ = head_;
-    LIter< T > prev(&dummy);
-    sortImpl(begin(), end(), prev, comp);
-    head_ = dummy.next_;
+
+    size_t step = 1;
+    detail::Node< T > *result = nullptr;
+    detail::Node< T > *tail = nullptr;
+
+    while (step < size_)
+    {
+      detail::Node< T > *curr = head_;
+      result = nullptr;
+      tail = nullptr;
+
+      while (curr)
+      {
+        detail::Node< T > *first = curr;
+        size_t firstCount = 0;
+        for (size_t i = 0; i < step && curr; ++i)
+        {
+          curr = curr->next_;
+          ++firstCount;
+        }
+
+        detail::Node< T > *second = curr;
+        size_t secondCount = 0;
+        for (size_t i = 0; i < step && curr; ++i)
+        {
+          curr = curr->next_;
+          ++secondCount;
+        }
+
+        while (firstCount > 0 || secondCount > 0)
+        {
+          detail::Node< T > *nextNode = nullptr;
+          if (firstCount == 0)
+          {
+            nextNode = second;
+            if (second)
+            {
+              second = second->next_;
+            }
+            --secondCount;
+          }
+          else if (secondCount == 0)
+          {
+            nextNode = first;
+            if (first)
+            {
+              first = first->next_;
+            }
+            --firstCount;
+          }
+          else if (comp(first->val_, second->val_))
+          {
+            nextNode = first;
+            first = first->next_;
+            --firstCount;
+          }
+          else
+          {
+            nextNode = second;
+            second = second->next_;
+            --secondCount;
+          }
+
+          if (!result)
+          {
+            result = nextNode;
+            tail = nextNode;
+          }
+          else
+          {
+            tail->next_ = nextNode;
+            tail = nextNode;
+          }
+        }
+      }
+
+      if (tail)
+      {
+        tail->next_ = nullptr;
+      }
+      head_ = result;
+      step *= 2;
+    }
   }
 
   template< class T >
