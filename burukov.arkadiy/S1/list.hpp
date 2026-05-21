@@ -789,54 +789,66 @@ namespace burukov
     {
       return end();
     }
-    List< T > trueList;
-    List< T > falseList;
-    while (head_)
+    
+    detail::Node< T > *trueHead = nullptr;
+    detail::Node< T > *trueTail = nullptr;
+    detail::Node< T > *falseHead = nullptr;
+    detail::Node< T > *falseTail = nullptr;
+    
+    detail::Node< T > *curr = head_;
+    head_ = nullptr;
+    size_t trueCount = 0;
+    size_t falseCount = 0;
+    
+    while (curr)
     {
-      detail::Node< T > *node = head_;
-      head_ = head_->next_;
-      node->next_ = nullptr;
-      if (pred(node->val_))
+      detail::Node< T > *next = curr->next_;
+      curr->next_ = nullptr;
+      
+      if (pred(curr->val_))
       {
-        if (!trueList.head_)
+        if (!trueHead)
         {
-          trueList.head_ = node;
-          trueList.tail_ = node;
+          trueHead = curr;
+          trueTail = curr;
         }
         else
         {
-          trueList.tail_->next_ = node;
-          trueList.tail_ = node;
+          trueTail->next_ = curr;
+          trueTail = curr;
         }
-        ++trueList.size_;
+        ++trueCount;
       }
       else
       {
-        if (!falseList.head_)
+        if (!falseHead)
         {
-          falseList.head_ = node;
-          falseList.tail_ = node;
+          falseHead = curr;
+          falseTail = curr;
         }
         else
         {
-          falseList.tail_->next_ = node;
-          falseList.tail_ = node;
+          falseTail->next_ = curr;
+          falseTail = curr;
         }
-        ++falseList.size_;
+        ++falseCount;
       }
+      curr = next;
     }
-    if (!trueList.empty())
+    
+    if (trueHead)
     {
-      trueList.tail_->next_ = falseList.head_;
-      head_ = trueList.head_;
-      tail_ = falseList.tail_ ? falseList.tail_ : trueList.tail_;
-      size_ = trueList.size_ + falseList.size_;
-      return LIter< T >(trueList.head_);
+      trueTail->next_ = falseHead;
+      head_ = trueHead;
+      tail_ = falseTail ? falseTail : trueTail;
+      size_ = trueCount + falseCount;
+      return LIter< T >(trueHead);
     }
-    head_ = falseList.head_;
-    tail_ = falseList.tail_;
-    size_ = falseList.size_;
-    return LIter< T >(falseList.head_);
+    
+    head_ = falseHead;
+    tail_ = falseTail;
+    size_ = falseCount;
+    return LIter< T >(falseHead);
   }
 }
 
