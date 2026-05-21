@@ -789,22 +789,22 @@ namespace burukov
     {
       return end();
     }
-    
+
     detail::Node< T > *trueHead = nullptr;
     detail::Node< T > *trueTail = nullptr;
     detail::Node< T > *falseHead = nullptr;
     detail::Node< T > *falseTail = nullptr;
-    
+
     detail::Node< T > *curr = head_;
     head_ = nullptr;
     size_t trueCount = 0;
     size_t falseCount = 0;
-    
+
     while (curr)
     {
       detail::Node< T > *next = curr->next_;
       curr->next_ = nullptr;
-      
+
       if (pred(curr->val_))
       {
         if (!trueHead)
@@ -835,7 +835,7 @@ namespace burukov
       }
       curr = next;
     }
-    
+
     if (trueHead)
     {
       trueTail->next_ = falseHead;
@@ -844,7 +844,7 @@ namespace burukov
       size_ = trueCount + falseCount;
       return LIter< T >(trueHead);
     }
-    
+
     head_ = falseHead;
     tail_ = falseTail;
     size_ = falseCount;
