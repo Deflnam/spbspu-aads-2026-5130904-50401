@@ -130,6 +130,7 @@ namespace burukov
 
   private:
     detail::Node< T > *head_;
+    detail::Node< T > *tail_;
     size_t size_;
 
     detail::Node< T > *getNodeBefore(LIter< T > it);
@@ -249,6 +250,7 @@ namespace burukov
   template< class T >
   List< T >::List() :
     head_(nullptr),
+    tail_(nullptr),
     size_(0)
   {
   }
@@ -256,6 +258,7 @@ namespace burukov
   template< class T >
   List< T >::List(const List< T > &other) :
     head_(nullptr),
+    tail_(nullptr),
     size_(0)
   {
     detail::Node< T > *src = other.head_;
@@ -275,10 +278,12 @@ namespace burukov
       if (!head_)
       {
         head_ = created;
+        tail_ = created;
       }
       else
       {
         dst->next_ = created;
+        tail_ = created;
       }
       dst = created;
       ++size_;
@@ -289,6 +294,7 @@ namespace burukov
   template< class T >
   List< T >::List(List< T > &&other) :
     head_(std::exchange(other.head_, nullptr)),
+    tail_(std::exchange(other.tail_, nullptr)),
     size_(std::exchange(other.size_, 0))
   {
   }
@@ -317,6 +323,7 @@ namespace burukov
     {
       clear();
       head_ = std::exchange(other.head_, nullptr);
+      tail_ = std::exchange(other.tail_, nullptr);
       size_ = std::exchange(other.size_, 0);
     }
     return *this;
@@ -351,6 +358,10 @@ namespace burukov
   void List< T >::pushFront(U &&val)
   {
     head_ = new detail::Node< T >(std::forward< U >(val), head_);
+    if (!tail_)
+    {
+      tail_ = head_;
+    }
     ++size_;
   }
 
@@ -359,6 +370,10 @@ namespace burukov
   {
     detail::Node< T > *old = head_;
     head_ = head_->next_;
+    if (!head_)
+    {
+      tail_ = nullptr;
+    }
     delete old;
     --size_;
   }
@@ -369,6 +384,10 @@ namespace burukov
   {
     detail::Node< T > *created = new detail::Node< T >(std::forward< U >(val), pos.getNode()->next_);
     pos.getNode()->next_ = created;
+    if (pos.getNode() == tail_)
+    {
+      tail_ = created;
+    }
     ++size_;
     return LIter< T >(created);
   }
@@ -378,6 +397,10 @@ namespace burukov
   {
     detail::Node< T > *victim = pos.getNode()->next_;
     pos.getNode()->next_ = victim->next_;
+    if (victim == tail_)
+    {
+      tail_ = pos.getNode();
+    }
     delete victim;
     --size_;
     return LIter< T >(pos.getNode()->next_);
@@ -392,6 +415,7 @@ namespace burukov
       head_ = head_->next_;
       delete tmp;
     }
+    tail_ = nullptr;
     size_ = 0;
   }
 
@@ -399,6 +423,7 @@ namespace burukov
   void List< T >::swap(List< T > &other)
   {
     std::swap(head_, other.head_);
+    std::swap(tail_, other.tail_);
     std::swap(size_, other.size_);
   }
 
@@ -450,27 +475,26 @@ namespace burukov
     }
     if (pos == begin())
     {
-      detail::Node< T > *otherTail = other.head_;
-      while (otherTail->next_)
-      {
-        otherTail = otherTail->next_;
-      }
-      otherTail->next_ = head_;
+      other.tail_->next_ = head_;
       head_ = other.head_;
+      if (!tail_)
+      {
+        tail_ = other.tail_;
+      }
     }
     else
     {
       detail::Node< T > *prev = getNodeBefore(pos);
-      detail::Node< T > *otherTail = other.head_;
-      while (otherTail->next_)
-      {
-        otherTail = otherTail->next_;
-      }
-      otherTail->next_ = prev->next_;
+      other.tail_->next_ = prev->next_;
       prev->next_ = other.head_;
+      if (prev == tail_)
+      {
+        tail_ = other.tail_;
+      }
     }
     size_ += other.size_;
     other.head_ = nullptr;
+    other.tail_ = nullptr;
     other.size_ = 0;
   }
 
@@ -491,16 +515,28 @@ namespace burukov
     {
       other.head_ = node->next_;
     }
+    if (node == other.tail_)
+    {
+      other.tail_ = prev;
+    }
     if (pos == begin())
     {
       node->next_ = head_;
       head_ = node;
+      if (!tail_)
+      {
+        tail_ = node;
+      }
     }
     else
     {
       detail::Node< T > *posPrev = getNodeBefore(pos);
       node->next_ = posPrev->next_;
       posPrev->next_ = node;
+      if (posPrev == tail_)
+      {
+        tail_ = node;
+      }
     }
     ++size_;
     --other.size_;
@@ -521,6 +557,11 @@ namespace burukov
     {
       ++count;
     }
+    detail::Node< T > *tailNode = firstNode;
+    while (tailNode->next_ != lastNode)
+    {
+      tailNode = tailNode->next_;
+    }
     if (prevFirst)
     {
       prevFirst->next_ = lastNode;
@@ -529,26 +570,28 @@ namespace burukov
     {
       other.head_ = lastNode;
     }
+    if (tailNode == other.tail_)
+    {
+      other.tail_ = prevFirst;
+    }
     if (pos == begin())
     {
-      detail::Node< T > *tail = firstNode;
-      while (tail->next_ != lastNode)
-      {
-        tail = tail->next_;
-      }
-      tail->next_ = head_;
+      tailNode->next_ = head_;
       head_ = firstNode;
+      if (!tail_)
+      {
+        tail_ = tailNode;
+      }
     }
     else
     {
       detail::Node< T > *posPrev = getNodeBefore(pos);
-      detail::Node< T > *tail = firstNode;
-      while (tail->next_ != lastNode)
-      {
-        tail = tail->next_;
-      }
-      tail->next_ = posPrev->next_;
+      tailNode->next_ = posPrev->next_;
       posPrev->next_ = firstNode;
+      if (posPrev == tail_)
+      {
+        tail_ = tailNode;
+      }
     }
     size_ += count;
     other.size_ -= count;
@@ -582,8 +625,17 @@ namespace burukov
     }
     tail->next_ = first ? first : second;
     head_ = dummy.next_;
+    if (tail->next_)
+    {
+      while (tail->next_)
+      {
+        tail = tail->next_;
+      }
+    }
+    tail_ = tail;
     size_ += other.size_;
     other.head_ = nullptr;
+    other.tail_ = nullptr;
     other.size_ = 0;
   }
 
@@ -616,8 +668,17 @@ namespace burukov
     }
     tail->next_ = first ? first : second;
     head_ = dummy.next_;
+    if (tail->next_)
+    {
+      while (tail->next_)
+      {
+        tail = tail->next_;
+      }
+    }
+    tail_ = tail;
     size_ += other.size_;
     other.head_ = nullptr;
+    other.tail_ = nullptr;
     other.size_ = 0;
   }
 
@@ -635,17 +696,14 @@ namespace burukov
     {
       return;
     }
-
     size_t step = 1;
     detail::Node< T > *result = nullptr;
-    detail::Node< T > *tail = nullptr;
-
+    detail::Node< T > *resultTail = nullptr;
     while (step < size_)
     {
       detail::Node< T > *curr = head_;
       result = nullptr;
-      tail = nullptr;
-
+      resultTail = nullptr;
       while (curr)
       {
         detail::Node< T > *first = curr;
@@ -655,7 +713,6 @@ namespace burukov
           curr = curr->next_;
           ++firstCount;
         }
-
         detail::Node< T > *second = curr;
         size_t secondCount = 0;
         for (size_t i = 0; i < step && curr; ++i)
@@ -663,7 +720,6 @@ namespace burukov
           curr = curr->next_;
           ++secondCount;
         }
-
         while (firstCount > 0 || secondCount > 0)
         {
           detail::Node< T > *nextNode = nullptr;
@@ -697,25 +753,24 @@ namespace burukov
             second = second->next_;
             --secondCount;
           }
-
           if (!result)
           {
             result = nextNode;
-            tail = nextNode;
+            resultTail = nextNode;
           }
           else
           {
-            tail->next_ = nextNode;
-            tail = nextNode;
+            resultTail->next_ = nextNode;
+            resultTail = nextNode;
           }
         }
       }
-
-      if (tail)
+      if (resultTail)
       {
-        tail->next_ = nullptr;
+        resultTail->next_ = nullptr;
       }
       head_ = result;
+      tail_ = resultTail;
       step *= 2;
     }
   }
@@ -746,15 +801,12 @@ namespace burukov
         if (!trueList.head_)
         {
           trueList.head_ = node;
+          trueList.tail_ = node;
         }
         else
         {
-          detail::Node< T > *tail = trueList.head_;
-          while (tail->next_)
-          {
-            tail = tail->next_;
-          }
-          tail->next_ = node;
+          trueList.tail_->next_ = node;
+          trueList.tail_ = node;
         }
         ++trueList.size_;
       }
@@ -763,32 +815,26 @@ namespace burukov
         if (!falseList.head_)
         {
           falseList.head_ = node;
+          falseList.tail_ = node;
         }
         else
         {
-          detail::Node< T > *tail = falseList.head_;
-          while (tail->next_)
-          {
-            tail = tail->next_;
-          }
-          tail->next_ = node;
+          falseList.tail_->next_ = node;
+          falseList.tail_ = node;
         }
         ++falseList.size_;
       }
     }
     if (!trueList.empty())
     {
-      detail::Node< T > *trueTail = trueList.head_;
-      while (trueTail->next_)
-      {
-        trueTail = trueTail->next_;
-      }
-      trueTail->next_ = falseList.head_;
+      trueList.tail_->next_ = falseList.head_;
       head_ = trueList.head_;
+      tail_ = falseList.tail_ ? falseList.tail_ : trueList.tail_;
       size_ = trueList.size_ + falseList.size_;
       return LIter< T >(trueList.head_);
     }
     head_ = falseList.head_;
+    tail_ = falseList.tail_;
     size_ = falseList.size_;
     return LIter< T >(falseList.head_);
   }
