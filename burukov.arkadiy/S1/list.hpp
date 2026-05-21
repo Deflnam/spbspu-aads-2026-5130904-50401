@@ -550,15 +550,26 @@ namespace burukov
       return;
     }
 
-    size_t count = 0;
-    for (LIter< T > it = first; it != last; ++it)
-    {
-      ++count;
-    }
-
     detail::Node< T > *firstNode = first.getNode();
     detail::Node< T > *lastNode = last.getNode();
-    detail::Node< T > *prevFirst = other.getNodeBefore(first);
+
+    detail::Node< T > *prevFirst = nullptr;
+    if (other.head_ != firstNode)
+    {
+      prevFirst = other.head_;
+      while (prevFirst->next_ != firstNode)
+      {
+        prevFirst = prevFirst->next_;
+      }
+    }
+
+    detail::Node< T > *rangeTail = firstNode;
+    size_t count = 1;
+    while (rangeTail->next_ != lastNode)
+    {
+      rangeTail = rangeTail->next_;
+      ++count;
+    }
 
     if (prevFirst)
     {
@@ -567,12 +578,6 @@ namespace burukov
     else
     {
       other.head_ = lastNode;
-    }
-
-    detail::Node< T > *rangeTail = firstNode;
-    while (rangeTail->next_ != lastNode)
-    {
-      rangeTail = rangeTail->next_;
     }
 
     if (rangeTail == other.tail_)
