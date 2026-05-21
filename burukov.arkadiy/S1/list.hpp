@@ -549,19 +549,17 @@ namespace burukov
     {
       return;
     }
-    detail::Node< T > *firstNode = first.getNode();
-    detail::Node< T > *lastNode = last.getNode();
-    detail::Node< T > *prevFirst = other.getNodeBefore(first);
+
     size_t count = 0;
     for (LIter< T > it = first; it != last; ++it)
     {
       ++count;
     }
-    detail::Node< T > *tailNode = firstNode;
-    while (tailNode->next_ != lastNode)
-    {
-      tailNode = tailNode->next_;
-    }
+
+    detail::Node< T > *firstNode = first.getNode();
+    detail::Node< T > *lastNode = last.getNode();
+    detail::Node< T > *prevFirst = other.getNodeBefore(first);
+
     if (prevFirst)
     {
       prevFirst->next_ = lastNode;
@@ -570,29 +568,38 @@ namespace burukov
     {
       other.head_ = lastNode;
     }
-    if (tailNode == other.tail_)
+
+    detail::Node< T > *rangeTail = firstNode;
+    while (rangeTail->next_ != lastNode)
+    {
+      rangeTail = rangeTail->next_;
+    }
+
+    if (rangeTail == other.tail_)
     {
       other.tail_ = prevFirst;
     }
+
     if (pos == begin())
     {
-      tailNode->next_ = head_;
+      rangeTail->next_ = head_;
       head_ = firstNode;
       if (!tail_)
       {
-        tail_ = tailNode;
+        tail_ = rangeTail;
       }
     }
     else
     {
       detail::Node< T > *posPrev = getNodeBefore(pos);
-      tailNode->next_ = posPrev->next_;
+      rangeTail->next_ = posPrev->next_;
       posPrev->next_ = firstNode;
       if (posPrev == tail_)
       {
-        tail_ = tailNode;
+        tail_ = rangeTail;
       }
     }
+
     size_ += count;
     other.size_ -= count;
   }
