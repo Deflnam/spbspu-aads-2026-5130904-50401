@@ -327,72 +327,14 @@ namespace burukov
     void splice(LIter< T > pos, List< T > &other, LIter< T > first, LIter< T > last)
     {
       if (first == last || other.empty()) return;
-
-      detail::Node< T > *firstNode = first.get();
-      detail::Node< T > *lastNode = last.get();
-
-      detail::Node< T > *rangeTail = firstNode;
-      size_t moved = 1;
-      while (rangeTail->next_ != lastNode)
+      LIter< T > current = first;
+      while (current != last)
       {
-        rangeTail = rangeTail->next_;
-        ++moved;
+        LIter< T > next = current;
+        ++next;
+        splice(pos, other, current);
+        current = next;
       }
-
-      if (last == other.end())
-      {
-        detail::Node< T > *newTail = firstNode;
-        size_t newMoved = 1;
-        while (newTail->next_ != rangeTail)
-        {
-          newTail = newTail->next_;
-          ++newMoved;
-        }
-        rangeTail = newTail;
-        moved = newMoved;
-        lastNode = rangeTail->next_;
-      }
-
-      detail::Node< T > *afterLast = lastNode ? lastNode->next_ : nullptr;
-      detail::Node< T > *beforeFirst = nullptr;
-      if (other.head_ != firstNode)
-      {
-        beforeFirst = other.head_;
-        while (beforeFirst && beforeFirst->next_ != firstNode) beforeFirst = beforeFirst->next_;
-      }
-
-      if (beforeFirst) beforeFirst->next_ = afterLast;
-      else other.head_ = afterLast;
-
-      if (rangeTail == other.tail_) other.tail_ = beforeFirst;
-
-      other.size_ -= moved;
-
-      if (empty())
-      {
-        head_ = firstNode;
-        tail_ = rangeTail;
-        tail_->next_ = nullptr;
-      }
-      else if (pos == begin())
-      {
-        rangeTail->next_ = head_;
-        head_ = firstNode;
-      }
-      else if (pos == end())
-      {
-        rangeTail->next_ = nullptr;
-        tail_->next_ = firstNode;
-        tail_ = rangeTail;
-      }
-      else
-      {
-        detail::Node< T > *beforePos = getBefore(pos);
-        rangeTail->next_ = beforePos->next_;
-        beforePos->next_ = firstNode;
-      }
-
-      size_ += moved;
     }
 
     void sort()
