@@ -155,18 +155,10 @@ namespace burukov
     {
       detail::Node< T > *current = other.head_;
 
-      try
+      while (current)
       {
-        while (current)
-        {
-          pushBack(current->value_);
-          current = current->next_;
-        }
-      }
-      catch (...)
-      {
-        clear();
-        throw;
+        pushBack(current->value_);
+        current = current->next_;
       }
     }
 
@@ -389,11 +381,6 @@ namespace burukov
         return;
       }
 
-      if (this == std::addressof(other))
-      {
-        return;
-      }
-
       detail::Node< T > *firstNode = first.get();
       detail::Node< T > *lastNode = last.get();
 
@@ -406,8 +393,7 @@ namespace burukov
         ++moved;
       }
 
-      detail::Node< T > *beforeFirst =
-          other.getBefore(first);
+      detail::Node< T > *beforeFirst = other.getBefore(first);
 
       if (beforeFirst)
       {
@@ -418,12 +404,18 @@ namespace burukov
         other.head_ = lastNode;
       }
 
-      if (other.tail_ == rangeTail)
+      if (rangeTail == other.tail_)
       {
         other.tail_ = beforeFirst;
       }
 
       other.size_ -= moved;
+
+      if (other.size_ == 0)
+      {
+        other.head_ = nullptr;
+        other.tail_ = nullptr;
+      }
 
       if (pos == begin())
       {
@@ -435,27 +427,25 @@ namespace burukov
           tail_ = rangeTail;
         }
       }
-      else if (pos == end())
+      else
       {
-        if (tail_)
+        detail::Node< T > *beforePos = getBefore(pos);
+
+        if (!beforePos)
         {
-          tail_->next_ = firstNode;
+          rangeTail->next_ = head_;
+          head_ = firstNode;
         }
         else
         {
-          head_ = firstNode;
+          rangeTail->next_ = beforePos->next_;
+          beforePos->next_ = firstNode;
         }
 
-        tail_ = rangeTail;
-        rangeTail->next_ = nullptr;
-      }
-      else
-      {
-        detail::Node< T > *beforePos =
-            getBefore(pos);
-
-        rangeTail->next_ = beforePos->next_;
-        beforePos->next_ = firstNode;
+        if (beforePos == tail_)
+        {
+          tail_ = rangeTail;
+        }
       }
 
       size_ += moved;
