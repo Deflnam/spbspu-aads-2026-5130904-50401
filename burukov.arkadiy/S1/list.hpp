@@ -327,8 +327,10 @@ namespace burukov
     void splice(LIter< T > pos, List< T > &other, LIter< T > first, LIter< T > last)
     {
       if (first == last || other.empty()) return;
+
       detail::Node< T > *firstNode = first.get();
       detail::Node< T > *lastNode = last.get();
+
       detail::Node< T > *rangeTail = firstNode;
       size_t moved = 1;
       while (rangeTail->next_ != lastNode)
@@ -336,7 +338,8 @@ namespace burukov
         rangeTail = rangeTail->next_;
         ++moved;
       }
-      if (last == other.end() && moved > 1)
+
+      if (last == other.end())
       {
         detail::Node< T > *newTail = firstNode;
         size_t newMoved = 1;
@@ -357,6 +360,7 @@ namespace burukov
         beforeFirst = other.head_;
         while (beforeFirst && beforeFirst->next_ != firstNode) beforeFirst = beforeFirst->next_;
       }
+
       if (beforeFirst) beforeFirst->next_ = afterLast;
       else other.head_ = afterLast;
 
