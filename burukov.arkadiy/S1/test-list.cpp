@@ -183,7 +183,8 @@ BOOST_AUTO_TEST_CASE(FrontEmptyThrows)
   burukov::List< int > list;
 
   BOOST_CHECK_THROW(list.front(), std::logic_error);
-  BOOST_CHECK_THROW(static_cast<const burukov::List< int > &>(list).front(), std::logic_error);
+  BOOST_CHECK_THROW(static_cast<const burukov::List< int > &>(list).front(),
+                    std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE(PushFront)
@@ -206,6 +207,25 @@ BOOST_AUTO_TEST_CASE(PushFrontMove)
 
   BOOST_CHECK(s.empty());
   BOOST_CHECK_EQUAL(list.front(), "hello");
+}
+
+BOOST_AUTO_TEST_CASE(PushBack)
+{
+  burukov::List< int > list;
+
+  list.pushBack(1);
+  list.pushBack(2);
+  list.pushBack(3);
+
+  BOOST_CHECK_EQUAL(list.size(), 3);
+  BOOST_CHECK_EQUAL(list.front(), 1);
+
+  auto it = list.begin();
+  BOOST_CHECK_EQUAL(*it, 1);
+  ++it;
+  BOOST_CHECK_EQUAL(*it, 2);
+  ++it;
+  BOOST_CHECK_EQUAL(*it, 3);
 }
 
 BOOST_AUTO_TEST_CASE(PopFront)
@@ -543,7 +563,7 @@ BOOST_AUTO_TEST_CASE(SpliceRange)
   list1.splice(pos, list2, first, last);
 
   BOOST_CHECK_EQUAL(list1.size(), 4);
-  BOOST_CHECK_EQUAL(list2.size(), 1);
+  BOOST_CHECK_EQUAL(list2.size(), 2);
 
   auto it = list1.begin();
   BOOST_CHECK_EQUAL(*it, 1);
