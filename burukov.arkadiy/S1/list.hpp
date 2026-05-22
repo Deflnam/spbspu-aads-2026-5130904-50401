@@ -383,7 +383,48 @@ namespace burukov
         return;
       }
 
-      splice(pos, other, other.begin(), other.end());
+      detail::Node< T > *firstNode = other.head_;
+      detail::Node< T > *lastNode = other.tail_;
+
+      size_t moved = other.size_;
+
+      other.head_ = nullptr;
+      other.tail_ = nullptr;
+      other.size_ = 0;
+
+      if (empty())
+      {
+        head_ = firstNode;
+        tail_ = lastNode;
+        if (tail_) tail_->next_ = nullptr;
+      }
+      else if (pos == begin())
+      {
+        lastNode->next_ = head_;
+        head_ = firstNode;
+      }
+      else if (pos == end())
+      {
+        if (tail_)
+        {
+          tail_->next_ = firstNode;
+        }
+        else
+        {
+          head_ = firstNode;
+        }
+        tail_ = lastNode;
+        if (tail_) tail_->next_ = nullptr;
+      }
+      else
+      {
+        detail::Node< T > *beforePos = getBefore(pos);
+
+        lastNode->next_ = beforePos->next_;
+        beforePos->next_ = firstNode;
+      }
+
+      size_ += moved;
     }
 
     void splice(LIter< T > pos, List< T > &other, LIter< T > it)
@@ -393,7 +434,10 @@ namespace burukov
         return;
       }
 
-      splice(pos, other, it, it);
+      LIter< T > next = it;
+      ++next;
+
+      splice(pos, other, it, next);
     }
 
     void splice(
@@ -402,7 +446,7 @@ namespace burukov
         LIter< T > first,
         LIter< T > last)
     {
-      if (first == other.end() || last == other.end())
+      if (first == last || other.empty())
       {
         return;
       }
@@ -410,14 +454,12 @@ namespace burukov
       detail::Node< T > *firstNode = first.get();
       detail::Node< T > *lastNode = last.get();
 
-      detail::Node< T > *afterLast = lastNode->next_;
+      detail::Node< T > *afterLast = lastNode ? lastNode->next_ : nullptr;
 
       detail::Node< T > *beforeFirst = other.getBefore(first);
 
       size_t moved = 1;
-
       detail::Node< T > *tmp = firstNode;
-
       while (tmp != lastNode)
       {
         tmp = tmp->next_;
@@ -450,7 +492,7 @@ namespace burukov
       {
         head_ = firstNode;
         tail_ = lastNode;
-        lastNode->next_ = nullptr;
+        if (tail_) tail_->next_ = nullptr;
       }
       else if (pos == begin())
       {
@@ -459,14 +501,20 @@ namespace burukov
       }
       else if (pos == end())
       {
-        tail_->next_ = firstNode;
+        if (tail_)
+        {
+          tail_->next_ = firstNode;
+        }
+        else
+        {
+          head_ = firstNode;
+        }
         tail_ = lastNode;
-        lastNode->next_ = nullptr;
+        if (tail_) tail_->next_ = nullptr;
       }
       else
       {
         detail::Node< T > *beforePos = getBefore(pos);
-
         if (!beforePos)
         {
           lastNode->next_ = head_;
