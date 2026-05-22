@@ -555,60 +555,75 @@ namespace burukov
       LIter< T > first,
       LIter< T > last)
   {
-    if (first == last)
+    if (first == last || other.empty())
     {
       return;
     }
 
-    detail::Node< T > *beforeFirst =
-        other.getBefore(first);
-
-    detail::Node< T > *rangeTail =
-        first.get();
+    detail::Node< T > *firstNode = first.get();
+    detail::Node< T > *lastNode = last.get();
 
     size_t moved = 1;
-
-    while (rangeTail->next_ != last.get())
+    detail::Node< T > *rangeTail = firstNode;
+    while (rangeTail->next_ != lastNode)
     {
       rangeTail = rangeTail->next_;
       ++moved;
     }
 
-    if (beforeFirst)
+    if (lastNode == nullptr && moved > 1)
     {
-      beforeFirst->next_ = last.get();
+      detail::Node< T > *newTail = firstNode;
+      size_t newMoved = 1;
+      while (newTail->next_ != rangeTail)
+      {
+        newTail = newTail->next_;
+        ++newMoved;
+      }
+      rangeTail = newTail;
+      moved = newMoved;
+      lastNode = rangeTail->next_;
+    }
+
+    detail::Node< T > *prevFirst = other.getBefore(first);
+
+    if (prevFirst)
+    {
+      prevFirst->next_ = lastNode;
     }
     else
     {
-      other.head_ = last.get();
+      other.head_ = lastNode;
     }
 
     if (rangeTail == other.tail_)
     {
-      other.tail_ = beforeFirst;
+      other.tail_ = prevFirst;
     }
+
+    other.size_ -= moved;
 
     if (pos == begin())
     {
       rangeTail->next_ = head_;
-      head_ = first.get();
+      head_ = firstNode;
+      if (!tail_)
+      {
+        tail_ = rangeTail;
+      }
     }
     else
     {
-      detail::Node< T > *beforePos =
-          getBefore(pos);
-
-      rangeTail->next_ = beforePos->next_;
-      beforePos->next_ = first.get();
-    }
-
-    if (!tail_)
-    {
-      tail_ = rangeTail;
+      detail::Node< T > *prev = getBefore(pos);
+      rangeTail->next_ = prev->next_;
+      prev->next_ = firstNode;
+      if (prev == tail_)
+      {
+        tail_ = rangeTail;
+      }
     }
 
     size_ += moved;
-    other.size_ -= moved;
   }
 
   template< class T >
