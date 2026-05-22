@@ -363,7 +363,7 @@ namespace burukov
       if (rangeTail == other.tail_) other.tail_ = beforeFirst;
 
       other.size_ -= moved;
-      
+
       if (empty())
       {
         head_ = firstNode;
