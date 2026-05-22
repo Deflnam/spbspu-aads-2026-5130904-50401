@@ -19,13 +19,10 @@ namespace burukov
       T value_;
       Node< T > *next_;
 
-      Node():
-        value_(),
-        next_(nullptr)
-      {}
+      Node() : value_(), next_(nullptr) {}
 
       template< class U >
-      Node(U &&value, Node< T > *next):
+      Node(U &&value, Node< T > *next = nullptr) :
         value_(std::forward< U >(value)),
         next_(next)
       {}
@@ -139,14 +136,10 @@ namespace burukov
   };
 
   template< class T >
-  LIter< T >::LIter():
-    ptr_(nullptr)
-  {}
+  LIter< T >::LIter() : ptr_(nullptr) {}
 
   template< class T >
-  LIter< T >::LIter(detail::Node< T > *ptr):
-    ptr_(ptr)
-  {}
+  LIter< T >::LIter(detail::Node< T > *ptr) : ptr_(ptr) {}
 
   template< class T >
   T &LIter< T >::operator*()
@@ -194,14 +187,10 @@ namespace burukov
   }
 
   template< class T >
-  LCIter< T >::LCIter():
-    ptr_(nullptr)
-  {}
+  LCIter< T >::LCIter() : ptr_(nullptr) {}
 
   template< class T >
-  LCIter< T >::LCIter(const detail::Node< T > *ptr):
-    ptr_(ptr)
-  {}
+  LCIter< T >::LCIter(const detail::Node< T > *ptr) : ptr_(ptr) {}
 
   template< class T >
   const T &LCIter< T >::operator*() const
@@ -243,17 +232,11 @@ namespace burukov
   }
 
   template< class T >
-  List< T >::List():
-    head_(nullptr),
-    tail_(nullptr),
-    size_(0)
-  {}
+  List< T >::List() : head_(nullptr), tail_(nullptr), size_(0) {}
 
   template< class T >
-  List< T >::List(const List< T > &other):
-    head_(nullptr),
-    tail_(nullptr),
-    size_(0)
+  List< T >::List(const List< T > &other) :
+    head_(nullptr), tail_(nullptr), size_(0)
   {
     detail::Node< T > *last = nullptr;
 
@@ -261,8 +244,7 @@ namespace burukov
     {
       for (LCIter< T > it = other.cbegin(); it != other.cend(); ++it)
       {
-        detail::Node< T > *created =
-            new detail::Node< T >(*it, nullptr);
+        detail::Node< T > *created = new detail::Node< T >(*it, nullptr);
 
         if (!head_)
         {
@@ -287,11 +269,10 @@ namespace burukov
   }
 
   template< class T >
-  List< T >::List(List< T > &&other) noexcept:
+  List< T >::List(List< T > &&other) noexcept :
     head_(std::exchange(other.head_, nullptr)),
     tail_(std::exchange(other.tail_, nullptr)),
-    size_(std::exchange(other.size_, 0))
-  {}
+    size_(std::exchange(other.size_, 0)) {}
 
   template< class T >
   List< T >::~List()
@@ -341,22 +322,14 @@ namespace burukov
   template< class T >
   T &List< T >::front()
   {
-    if (!head_)
-    {
-      throw std::logic_error("empty list");
-    }
-
+    if (!head_) throw std::logic_error("empty list");
     return head_->value_;
   }
 
   template< class T >
   const T &List< T >::front() const
   {
-    if (!head_)
-    {
-      throw std::logic_error("empty list");
-    }
-
+    if (!head_) throw std::logic_error("empty list");
     return head_->value_;
   }
 
@@ -364,9 +337,7 @@ namespace burukov
   template< class U >
   void List< T >::pushFront(U &&value)
   {
-    head_ = new detail::Node< T >(
-        std::forward< U >(value),
-        head_);
+    head_ = new detail::Node< T >(std::forward< U >(value), head_);
 
     if (!tail_)
     {
@@ -379,10 +350,7 @@ namespace burukov
   template< class T >
   void List< T >::popFront()
   {
-    if (!head_)
-    {
-      return;
-    }
+    if (!head_) return;
 
     detail::Node< T > *old = head_;
     head_ = head_->next_;
@@ -390,34 +358,20 @@ namespace burukov
     delete old;
     --size_;
 
-    if (!head_)
-    {
-      tail_ = nullptr;
-    }
+    if (!head_) tail_ = nullptr;
   }
 
   template< class T >
   template< class U >
-  LIter< T > List< T >::insertAfter(
-      LIter< T > pos,
-      U &&value)
+  LIter< T > List< T >::insertAfter(LIter< T > pos, U &&value)
   {
-    if (pos == end())
-    {
-      return end();
-    }
+    if (pos == end()) return end();
 
-    detail::Node< T > *created =
-        new detail::Node< T >(
-            std::forward< U >(value),
-            pos.get()->next_);
+    detail::Node< T > *created = new detail::Node< T >(std::forward< U >(value), pos.get()->next_);
 
     pos.get()->next_ = created;
 
-    if (tail_ == pos.get())
-    {
-      tail_ = created;
-    }
+    if (tail_ == pos.get()) tail_ = created;
 
     ++size_;
 
@@ -427,19 +381,13 @@ namespace burukov
   template< class T >
   LIter< T > List< T >::eraseAfter(LIter< T > pos)
   {
-    if (pos == end() || pos.get()->next_ == nullptr)
-    {
-      return end();
-    }
+    if (pos == end() || pos.get()->next_ == nullptr) return end();
 
     detail::Node< T > *victim = pos.get()->next_;
 
     pos.get()->next_ = victim->next_;
 
-    if (victim == tail_)
-    {
-      tail_ = pos.get();
-    }
+    if (tail_ == victim) tail_ = pos.get();
 
     delete victim;
     --size_;
@@ -491,10 +439,7 @@ namespace burukov
   template< class T >
   detail::Node< T > *List< T >::getBefore(LIter< T > it)
   {
-    if (it == begin())
-    {
-      return nullptr;
-    }
+    if (it == begin()) return nullptr;
 
     detail::Node< T > *current = head_;
 
@@ -509,10 +454,7 @@ namespace burukov
   template< class T >
   void List< T >::splice(LIter< T > pos, List< T > &other)
   {
-    if (other.empty() || this == &other)
-    {
-      return;
-    }
+    if (other.empty() || this == &other) return;
 
     if (pos == begin())
     {
@@ -527,10 +469,7 @@ namespace burukov
       prev->next_ = other.head_;
     }
 
-    if (!tail_)
-    {
-      tail_ = other.tail_;
-    }
+    if (!tail_) tail_ = other.tail_;
 
     size_ += other.size_;
 
@@ -540,7 +479,7 @@ namespace burukov
   }
 
   template< class T >
-  void List< T >::splice(LIter< T > pos,List< T > &other,LIter< T > it)
+  void List< T >::splice(LIter< T > pos, List< T > &other, LIter< T > it)
   {
     LIter< T > next = it;
     ++next;
@@ -555,16 +494,14 @@ namespace burukov
       LIter< T > first,
       LIter< T > last)
   {
-    if (first == last || other.empty())
-    {
-      return;
-    }
+    if (first == last || other.empty()) return;
 
     detail::Node< T > *firstNode = first.get();
     detail::Node< T > *lastNode = last.get();
 
     size_t moved = 1;
     detail::Node< T > *rangeTail = firstNode;
+
     while (rangeTail->next_ != lastNode)
     {
       rangeTail = rangeTail->next_;
@@ -575,11 +512,13 @@ namespace burukov
     {
       detail::Node< T > *newTail = firstNode;
       size_t newMoved = 1;
+
       while (newTail->next_ != rangeTail)
       {
         newTail = newTail->next_;
         ++newMoved;
       }
+
       rangeTail = newTail;
       moved = newMoved;
       lastNode = rangeTail->next_;
@@ -607,20 +546,17 @@ namespace burukov
     {
       rangeTail->next_ = head_;
       head_ = firstNode;
-      if (!tail_)
-      {
-        tail_ = rangeTail;
-      }
+
+      if (!tail_) tail_ = rangeTail;
     }
     else
     {
       detail::Node< T > *prev = getBefore(pos);
+
       rangeTail->next_ = prev->next_;
       prev->next_ = firstNode;
-      if (prev == tail_)
-      {
-        tail_ = rangeTail;
-      }
+
+      if (prev == tail_) tail_ = rangeTail;
     }
 
     size_ += moved;
@@ -636,10 +572,7 @@ namespace burukov
   template< class Compare >
   void List< T >::sort(Compare comp)
   {
-    if (size_ < 2)
-    {
-      return;
-    }
+    if (size_ < 2) return;
 
     for (detail::Node< T > *i = head_; i; i = i->next_)
     {
@@ -663,10 +596,7 @@ namespace burukov
   template< class Compare >
   void List< T >::merge(List< T > &other, Compare comp)
   {
-    if (this == &other || other.empty())
-    {
-      return;
-    }
+    if (this == &other || other.empty()) return;
 
     detail::Node< T > dummy;
     detail::Node< T > *current = &dummy;
@@ -709,12 +639,10 @@ namespace burukov
   }
 
   template< class T >
-  template< class Predicate >LIter< T > List< T >::partition(Predicate pred)
+  template< class Predicate >
+  LIter< T > List< T >::partition(Predicate pred)
   {
-    if (!head_)
-    {
-      return end();
-    }
+    if (!head_) return end();
 
     detail::Node< T > *trueHead = nullptr;
     detail::Node< T > *trueTail = nullptr;
