@@ -51,7 +51,7 @@ namespace burukov
 
     T *operator->()
     {
-      return &(ptr_->value_);
+      return std::addressof(ptr_->value_);
     }
 
     LIter< T > &operator++()
@@ -107,7 +107,7 @@ namespace burukov
 
     const T *operator->() const
     {
-      return &(ptr_->value_);
+      return std::addressof(ptr_->value_);
     }
 
     LCIter< T > &operator++()
@@ -152,34 +152,12 @@ namespace burukov
       tail_(nullptr),
       size_(0)
     {
-      detail::Node< T > *last = nullptr;
+      detail::Node< T > *current = other.head_;
 
-      try
+      while (current)
       {
-        for (auto it = other.cbegin(); it != other.cend(); ++it)
-        {
-          detail::Node< T > *node =
-              new detail::Node< T >(*it);
-
-          if (!head_)
-          {
-            head_ = node;
-          }
-          else
-          {
-            last->next_ = node;
-          }
-
-          last = node;
-          ++size_;
-        }
-
-        tail_ = last;
-      }
-      catch (...)
-      {
-        clear();
-        throw;
+        pushBack(current->value_);
+        current = current->next_;
       }
     }
 
@@ -196,7 +174,7 @@ namespace burukov
 
     List< T > &operator=(const List< T > &other)
     {
-      if (this != &other)
+      if (this != std::addressof(other))
       {
         List< T > temp(other);
         swap(temp);
@@ -207,7 +185,7 @@ namespace burukov
 
     List< T > &operator=(List< T > &&other) noexcept
     {
-      if (this != &other)
+      if (this != std::addressof(other))
       {
         clear();
 
@@ -252,10 +230,9 @@ namespace burukov
     template< class U >
     void pushFront(U &&value)
     {
-      head_ =
-          new detail::Node< T >(
-              std::forward< U >(value),
-              head_);
+      head_ = new detail::Node< T >(
+          std::forward< U >(value),
+          head_);
 
       if (!tail_)
       {
@@ -272,11 +249,11 @@ namespace burukov
         return;
       }
 
-      detail::Node< T > *old = head_;
+      detail::Node< T > *temp = head_;
 
       head_ = head_->next_;
 
-      delete old;
+      delete temp;
 
       --size_;
 
@@ -294,32 +271,31 @@ namespace burukov
         return end();
       }
 
-      detail::Node< T > *node =
+      detail::Node< T > *created =
           new detail::Node< T >(
               std::forward< U >(value),
               pos.get()->next_);
 
-      pos.get()->next_ = node;
+      pos.get()->next_ = created;
 
       if (tail_ == pos.get())
       {
-        tail_ = node;
+        tail_ = created;
       }
 
       ++size_;
 
-      return LIter< T >(node);
+      return LIter< T >(created);
     }
 
     LIter< T > eraseAfter(LIter< T > pos)
     {
-      if (pos == end() || pos.get()->next_ == nullptr)
+      if (pos == end() || !pos.get()->next_)
       {
         return end();
       }
 
-      detail::Node< T > *victim =
-          pos.get()->next_;
+      detail::Node< T > *victim = pos.get()->next_;
 
       pos.get()->next_ = victim->next_;
 
@@ -372,42 +348,21 @@ namespace burukov
 
     void splice(LIter< T > pos, List< T > &other)
     {
-      if (other.empty() || this == &other)
+      if (this == std::addressof(other) || other.empty())
       {
         return;
       }
 
-      if (pos == begin())
-      {
-        other.tail_->next_ = head_;
-        head_ = other.head_;
-      }
-      else
-      {
-        detail::Node< T > *beforePos =
-            getBefore(pos);
-
-        other.tail_->next_ = beforePos->next_;
-        beforePos->next_ = other.head_;
-      }
-
-      if (!tail_)
-      {
-        tail_ = other.tail_;
-      }
-
-      size_ += other.size_;
-
-      other.head_ = nullptr;
-      other.tail_ = nullptr;
-      other.size_ = 0;
+      splice(pos, other, other.begin(), other.end());
     }
 
-    void splice(
-        LIter< T > pos,
-        List< T > &other,
-        LIter< T > it)
+    void splice(LIter< T > pos, List< T > &other, LIter< T > it)
     {
+      if (it == other.end())
+      {
+        return;
+      }
+
       LIter< T > next = it;
       ++next;
 
@@ -429,6 +384,7 @@ namespace burukov
       detail::Node< T > *lastNode = last.get();
 
       detail::Node< T > *rangeTail = firstNode;
+
       size_t moved = 1;
 
       while (rangeTail->next_ != lastNode)
@@ -466,6 +422,20 @@ namespace burukov
           tail_ = rangeTail;
         }
       }
+      else if (pos == end())
+      {
+        if (tail_)
+        {
+          tail_->next_ = firstNode;
+        }
+        else
+        {
+          head_ = firstNode;
+        }
+
+        tail_ = rangeTail;
+        rangeTail->next_ = nullptr;
+      }
       else
       {
         detail::Node< T > *beforePos =
@@ -473,11 +443,6 @@ namespace burukov
 
         rangeTail->next_ = beforePos->next_;
         beforePos->next_ = firstNode;
-
-        if (beforePos == tail_)
-        {
-          tail_ = rangeTail;
-        }
       }
 
       size_ += moved;
@@ -496,13 +461,9 @@ namespace burukov
         return;
       }
 
-      for (detail::Node< T > *i = head_;
-          i;
-          i = i->next_)
+      for (detail::Node< T > *i = head_; i; i = i->next_)
       {
-        for (detail::Node< T > *j = i->next_;
-            j;
-            j = j->next_)
+        for (detail::Node< T > *j = i->next_; j; j = j->next_)
         {
           if (comp(j->value_, i->value_))
           {
@@ -520,7 +481,7 @@ namespace burukov
     template< class Compare >
     void merge(List< T > &other, Compare comp)
     {
-      if (this == &other || other.empty())
+      if (this == std::addressof(other) || other.empty())
       {
         return;
       }
@@ -636,6 +597,27 @@ namespace burukov
     detail::Node< T > *head_;
     detail::Node< T > *tail_;
     size_t size_;
+
+    template< class U >
+    void pushBack(U &&value)
+    {
+      detail::Node< T > *created =
+          new detail::Node< T >(
+              std::forward< U >(value));
+
+      if (!head_)
+      {
+        head_ = created;
+        tail_ = created;
+      }
+      else
+      {
+        tail_->next_ = created;
+        tail_ = created;
+      }
+
+      ++size_;
+    }
 
     detail::Node< T > *getBefore(LIter< T > it)
     {
