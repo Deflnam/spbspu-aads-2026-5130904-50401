@@ -251,6 +251,27 @@ namespace burukov
       ++size_;
     }
 
+    template< class U >
+    void pushBack(U &&value)
+    {
+      detail::Node< T > *created =
+          new detail::Node< T >(
+              std::forward< U >(value));
+
+      if (!head_)
+      {
+        head_ = created;
+        tail_ = created;
+      }
+      else
+      {
+        tail_->next_ = created;
+        tail_ = created;
+      }
+
+      ++size_;
+    }
+
     void popFront()
     {
       if (!head_)
@@ -372,10 +393,7 @@ namespace burukov
         return;
       }
 
-      LIter< T > next = it;
-      ++next;
-
-      splice(pos, other, it, next);
+      splice(pos, other, it, it);
     }
 
     void splice(
@@ -384,7 +402,7 @@ namespace burukov
         LIter< T > first,
         LIter< T > last)
     {
-      if (first == last || other.empty())
+      if (first == other.end() || last == other.end())
       {
         return;
       }
@@ -392,26 +410,30 @@ namespace burukov
       detail::Node< T > *firstNode = first.get();
       detail::Node< T > *lastNode = last.get();
 
-      detail::Node< T > *rangeTail = firstNode;
+      detail::Node< T > *afterLast = lastNode->next_;
+
+      detail::Node< T > *beforeFirst = other.getBefore(first);
+
       size_t moved = 1;
 
-      while (rangeTail->next_ != lastNode)
+      detail::Node< T > *tmp = firstNode;
+
+      while (tmp != lastNode)
       {
-        rangeTail = rangeTail->next_;
+        tmp = tmp->next_;
         ++moved;
       }
 
-      detail::Node< T > *beforeFirst = other.getBefore(first);
       if (beforeFirst)
       {
-        beforeFirst->next_ = lastNode;
+        beforeFirst->next_ = afterLast;
       }
       else
       {
-        other.head_ = lastNode;
+        other.head_ = afterLast;
       }
 
-      if (rangeTail == other.tail_)
+      if (other.tail_ == lastNode)
       {
         other.tail_ = beforeFirst;
       }
@@ -424,37 +446,37 @@ namespace burukov
         other.tail_ = nullptr;
       }
 
-      if (pos == begin())
+      if (empty())
       {
-        rangeTail->next_ = head_;
         head_ = firstNode;
-
-        if (!tail_)
-        {
-          tail_ = rangeTail;
-        }
+        tail_ = lastNode;
+        lastNode->next_ = nullptr;
+      }
+      else if (pos == begin())
+      {
+        lastNode->next_ = head_;
+        head_ = firstNode;
       }
       else if (pos == end())
       {
-        rangeTail->next_ = nullptr;
-
-        if (tail_)
-        {
-          tail_->next_ = firstNode;
-        }
-        else
-        {
-          head_ = firstNode;
-        }
-
-        tail_ = rangeTail;
+        tail_->next_ = firstNode;
+        tail_ = lastNode;
+        lastNode->next_ = nullptr;
       }
       else
       {
         detail::Node< T > *beforePos = getBefore(pos);
 
-        rangeTail->next_ = beforePos->next_;
-        beforePos->next_ = firstNode;
+        if (!beforePos)
+        {
+          lastNode->next_ = head_;
+          head_ = firstNode;
+        }
+        else
+        {
+          lastNode->next_ = beforePos->next_;
+          beforePos->next_ = firstNode;
+        }
       }
 
       size_ += moved;
@@ -506,15 +528,15 @@ namespace burukov
 
       while (left && right)
       {
-        if (comp(left->value_, right->value_))
-        {
-          current->next_ = left;
-          left = left->next_;
-        }
-        else
+        if (comp(right->value_, left->value_))
         {
           current->next_ = right;
           right = right->next_;
+        }
+        else
+        {
+          current->next_ = left;
+          left = left->next_;
         }
 
         current = current->next_;
@@ -541,11 +563,6 @@ namespace burukov
     template< class Predicate >
     LIter< T > partition(Predicate pred)
     {
-      if (!head_)
-      {
-        return end();
-      }
-
       detail::Node< T > *trueHead = nullptr;
       detail::Node< T > *trueTail = nullptr;
 
@@ -590,17 +607,17 @@ namespace burukov
         current = next;
       }
 
-      if (trueTail)
+      if (trueHead)
       {
-        trueTail->next_ = falseHead;
         head_ = trueHead;
+        trueTail->next_ = falseHead;
         tail_ = falseTail ? falseTail : trueTail;
+
+        return LIter< T >(falseHead);
       }
-      else
-      {
-        head_ = falseHead;
-        tail_ = falseTail;
-      }
+
+      head_ = falseHead;
+      tail_ = falseTail;
 
       return begin();
     }
@@ -609,27 +626,6 @@ namespace burukov
     detail::Node< T > *head_;
     detail::Node< T > *tail_;
     size_t size_;
-
-    template< class U >
-    void pushBack(U &&value)
-    {
-      detail::Node< T > *created =
-          new detail::Node< T >(
-              std::forward< U >(value));
-
-      if (!head_)
-      {
-        head_ = created;
-        tail_ = created;
-      }
-      else
-      {
-        tail_->next_ = created;
-        tail_ = created;
-      }
-
-      ++size_;
-    }
 
     detail::Node< T > *getBefore(LIter< T > it)
     {
