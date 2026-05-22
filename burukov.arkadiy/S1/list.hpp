@@ -328,57 +328,15 @@ namespace burukov
     {
       if (first == last || other.empty()) return;
 
-      detail::Node< T > *firstNode = first.get();
-      detail::Node< T > *lastNode = last.get();
-
-      size_t moved = 1;
-      detail::Node< T > *tmp = firstNode;
-      while (tmp != lastNode && tmp->next_)
+      // Переносим все элементы от first до last (last не включается)
+      LIter< T > current = first;
+      while (current != last)
       {
-        tmp = tmp->next_;
-        ++moved;
+        LIter< T > next = current;
+        ++next;
+        splice(pos, other, current);
+        current = next;
       }
-
-      detail::Node< T > *afterLast = lastNode ? lastNode->next_ : nullptr;
-      detail::Node< T > *beforeFirst = nullptr;
-      if (other.head_ != firstNode)
-      {
-        beforeFirst = other.head_;
-        while (beforeFirst && beforeFirst->next_ != firstNode) beforeFirst = beforeFirst->next_;
-      }
-
-      if (beforeFirst) beforeFirst->next_ = afterLast;
-      else other.head_ = afterLast;
-
-      if (other.tail_ == lastNode) other.tail_ = beforeFirst;
-
-      other.size_ -= moved;
-
-      if (empty())
-      {
-        head_ = firstNode;
-        tail_ = tmp;
-        tail_->next_ = nullptr;
-      }
-      else if (pos == begin())
-      {
-        tmp->next_ = head_;
-        head_ = firstNode;
-      }
-      else if (pos == end())
-      {
-        tmp->next_ = nullptr;
-        tail_->next_ = firstNode;
-        tail_ = tmp;
-      }
-      else
-      {
-        detail::Node< T > *before = getBefore(pos);
-        tmp->next_ = before->next_;
-        before->next_ = firstNode;
-      }
-
-      size_ += moved;
     }
 
     void sort()
@@ -478,6 +436,7 @@ namespace burukov
         trueTail->next_ = falseHead;
         head_ = trueHead;
         tail_ = falseTail ? falseTail : trueTail;
+        // пересчёт размера
         size_ = 0;
         for (detail::Node< T > *p = head_; p; p = p->next_) ++size_;
         return LIter< T >(trueHead);
@@ -486,7 +445,7 @@ namespace burukov
       head_ = falseHead;
       tail_ = falseTail;
       size_ = 0;
-      for (detail:: Node< T > *p = head_; p; p = p->next_) ++size_;
+      for (detail::Node< T > *p = head_; p; p = p->next_) ++size_;
       return begin();
     }
 
