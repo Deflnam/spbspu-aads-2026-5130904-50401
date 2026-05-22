@@ -327,14 +327,55 @@ namespace burukov
     void splice(LIter< T > pos, List< T > &other, LIter< T > first, LIter< T > last)
     {
       if (first == last || other.empty()) return;
-      LIter< T > current = first;
-      while (current != last)
+
+      detail::Node< T > *firstNode = first.get();
+      detail::Node< T > *lastNode = last.get();
+
+      detail::Node< T > *rangeTail = firstNode;
+      size_t moved = 1;
+      while (rangeTail->next_ != lastNode)
       {
-        LIter< T > next = current;
-        ++next;
-        splice(pos, other, current);
-        current = next;
+        rangeTail = rangeTail->next_;
+        ++moved;
       }
+
+      detail::Node< T > *afterLast = lastNode ? lastNode->next_ : nullptr;
+      detail::Node< T > *beforeFirst = nullptr;
+      if (other.head_ != firstNode)
+      {
+        beforeFirst = other.head_;
+        while (beforeFirst && beforeFirst->next_ != firstNode) beforeFirst = beforeFirst->next_;
+      }
+
+      if (beforeFirst) beforeFirst->next_ = afterLast;
+      else other.head_ = afterLast;
+
+      if (rangeTail == other.tail_) other.tail_ = beforeFirst;
+
+      other.size_ -= moved;
+
+      if (pos == begin())
+      {
+        rangeTail->next_ = head_;
+        head_ = firstNode;
+        if (!tail_) tail_ = rangeTail;
+      }
+      else if (pos == end())
+      {
+        rangeTail->next_ = nullptr;
+        if (tail_) tail_->next_ = firstNode;
+        else head_ = firstNode;
+        tail_ = rangeTail;
+      }
+      else
+      {
+        detail::Node< T > *beforePos = getBefore(pos);
+        rangeTail->next_ = beforePos->next_;
+        beforePos->next_ = firstNode;
+        if (beforePos == tail_) tail_ = rangeTail;
+      }
+
+      size_ += moved;
     }
 
     void sort()
