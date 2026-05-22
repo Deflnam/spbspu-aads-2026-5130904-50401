@@ -339,6 +339,20 @@ namespace burukov
         ++moved;
       }
 
+      if (lastNode == nullptr)
+      {
+        detail::Node< T > *newTail = firstNode;
+        size_t newMoved = 1;
+        while (newTail->next_ != rangeTail)
+        {
+          newTail = newTail->next_;
+          ++newMoved;
+        }
+        rangeTail = newTail;
+        moved = newMoved;
+        lastNode = rangeTail->next_;
+      }
+
       detail::Node< T > *afterLast = lastNode ? lastNode->next_ : nullptr;
       detail::Node< T > *beforeFirst = nullptr;
       if (other.head_ != firstNode)
