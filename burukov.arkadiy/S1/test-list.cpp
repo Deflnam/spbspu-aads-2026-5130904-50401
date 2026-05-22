@@ -145,7 +145,8 @@ BOOST_AUTO_TEST_CASE(MoveAssignmentSelf)
   list.pushFront(2);
   list.pushFront(1);
 
-  list = std::move(list);
+  burukov::List< int > *ptr = &list;
+  *ptr = std::move(list);
 
   BOOST_CHECK_EQUAL(list.size(), 2);
 }
