@@ -153,12 +153,20 @@ namespace burukov
       tail_(nullptr),
       size_(0)
     {
-      detail::Node< T > *current = other.head_;
-
-      while (current)
+      try
       {
-        pushBack(current->value_);
-        current = current->next_;
+        detail::Node< T > *current = other.head_;
+
+        while (current)
+        {
+          pushBack(current->value_);
+          current = current->next_;
+        }
+      }
+      catch (...)
+      {
+        clear();
+        throw;
       }
     }
 
@@ -394,7 +402,6 @@ namespace burukov
       }
 
       detail::Node< T > *beforeFirst = other.getBefore(first);
-
       if (beforeFirst)
       {
         beforeFirst->next_ = lastNode;
@@ -427,25 +434,27 @@ namespace burukov
           tail_ = rangeTail;
         }
       }
+      else if (pos == end())
+      {
+        rangeTail->next_ = nullptr;
+
+        if (tail_)
+        {
+          tail_->next_ = firstNode;
+        }
+        else
+        {
+          head_ = firstNode;
+        }
+
+        tail_ = rangeTail;
+      }
       else
       {
         detail::Node< T > *beforePos = getBefore(pos);
 
-        if (!beforePos)
-        {
-          rangeTail->next_ = head_;
-          head_ = firstNode;
-        }
-        else
-        {
-          rangeTail->next_ = beforePos->next_;
-          beforePos->next_ = firstNode;
-        }
-
-        if (beforePos == tail_)
-        {
-          tail_ = rangeTail;
-        }
+        rangeTail->next_ = beforePos->next_;
+        beforePos->next_ = firstNode;
       }
 
       size_ += moved;
