@@ -5,6 +5,7 @@
 #include <utility>
 #include <functional>
 #include <stdexcept>
+#include <memory>
 
 namespace burukov
 {
@@ -154,10 +155,18 @@ namespace burukov
     {
       detail::Node< T > *current = other.head_;
 
-      while (current)
+      try
       {
-        pushBack(current->value_);
-        current = current->next_;
+        while (current)
+        {
+          pushBack(current->value_);
+          current = current->next_;
+        }
+      }
+      catch (...)
+      {
+        clear();
+        throw;
       }
     }
 
@@ -380,11 +389,15 @@ namespace burukov
         return;
       }
 
+      if (this == std::addressof(other))
+      {
+        return;
+      }
+
       detail::Node< T > *firstNode = first.get();
       detail::Node< T > *lastNode = last.get();
 
       detail::Node< T > *rangeTail = firstNode;
-
       size_t moved = 1;
 
       while (rangeTail->next_ != lastNode)
@@ -405,7 +418,7 @@ namespace burukov
         other.head_ = lastNode;
       }
 
-      if (rangeTail == other.tail_)
+      if (other.tail_ == rangeTail)
       {
         other.tail_ = beforeFirst;
       }
