@@ -326,11 +326,10 @@ namespace burukov
 
     void splice(LIter< T > pos, List< T > &other, LIter< T > first, LIter< T > last)
     {
-      if (first == last || other.empty()) return;
+      if (first == last || other.empty() || this == std::addressof(other)) return;
 
       detail::Node< T > *firstNode = first.get();
       detail::Node< T > *lastNode = last.get();
-
       detail::Node< T > *rangeTail = firstNode;
       size_t moved = 1;
       while (rangeTail->next_ != lastNode)
@@ -339,27 +338,14 @@ namespace burukov
         ++moved;
       }
 
-      if (lastNode == nullptr)
-      {
-        detail::Node< T > *newTail = firstNode;
-        size_t newMoved = 1;
-        while (newTail->next_ != rangeTail)
-        {
-          newTail = newTail->next_;
-          ++newMoved;
-        }
-        rangeTail = newTail;
-        moved = newMoved;
-        lastNode = rangeTail->next_;
-      }
-
-      detail::Node< T > *afterLast = lastNode ? lastNode->next_ : nullptr;
       detail::Node< T > *beforeFirst = nullptr;
       if (other.head_ != firstNode)
       {
         beforeFirst = other.head_;
-        while (beforeFirst && beforeFirst->next_ != firstNode) beforeFirst = beforeFirst->next_;
+        while (beforeFirst->next_ != firstNode) beforeFirst = beforeFirst->next_;
       }
+
+      detail::Node< T > *afterLast = rangeTail->next_;
 
       if (beforeFirst) beforeFirst->next_ = afterLast;
       else other.head_ = afterLast;
@@ -368,17 +354,21 @@ namespace burukov
 
       other.size_ -= moved;
 
-      if (pos == begin())
+      if (empty())
+      {
+        head_ = firstNode;
+        tail_ = rangeTail;
+        rangeTail->next_ = nullptr;
+      }
+      else if (pos == begin())
       {
         rangeTail->next_ = head_;
         head_ = firstNode;
-        if (!tail_) tail_ = rangeTail;
       }
       else if (pos == end())
       {
         rangeTail->next_ = nullptr;
-        if (tail_) tail_->next_ = firstNode;
-        else head_ = firstNode;
+        tail_->next_ = firstNode;
         tail_ = rangeTail;
       }
       else
