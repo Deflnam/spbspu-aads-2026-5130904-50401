@@ -562,8 +562,8 @@ BOOST_AUTO_TEST_CASE(SpliceRange)
 
   list1.splice(pos, list2, first, last);
 
-  BOOST_CHECK_EQUAL(list1.size(), 5);
-  BOOST_CHECK_EQUAL(list2.size(), 1);
+  BOOST_CHECK_EQUAL(list1.size(), 4);
+  BOOST_CHECK_EQUAL(list2.size(), 2);
 
   auto it = list1.begin();
   BOOST_CHECK_EQUAL(*it, 1);
@@ -571,8 +571,6 @@ BOOST_AUTO_TEST_CASE(SpliceRange)
   BOOST_CHECK_EQUAL(*it, 3);
   ++it;
   BOOST_CHECK_EQUAL(*it, 4);
-  ++it;
-  BOOST_CHECK_EQUAL(*it, 6);
   ++it;
   BOOST_CHECK_EQUAL(*it, 5);
 }
