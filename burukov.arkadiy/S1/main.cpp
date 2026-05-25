@@ -10,9 +10,7 @@ namespace burukov
   using pair_t = std::pair<std::string,List< unsigned long long >>;
 
   template< class Container >
-  void printContainer(
-      std::ostream &out,
-      const Container &container)
+  void printContainer(std::ostream &out,const Container &container)
   {
     auto it = container.cbegin();
 
@@ -28,9 +26,7 @@ namespace burukov
     }
   }
 
-  void printNames(
-      std::ostream &out,
-      const List< pair_t > &seqs)
+  void printNames(std::ostream &out,const List< pair_t > &seqs)
   {
     auto it = seqs.cbegin();
 
