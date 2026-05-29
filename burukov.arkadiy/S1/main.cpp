@@ -1,207 +1,241 @@
 #include "list.hpp"
+
 #include <iostream>
 #include <string>
-#include <utility>
 #include <limits>
+#include <utility>
 
 namespace burukov
 {
-  using pair_t = std::pair< std::string, List< unsigned long long > >;
+  using pair_t = std::pair<std::string,List< unsigned long long >>;
 
-  void readSequences(std::istream &in, List< pair_t > &seqs)
+  template< class Container >
+  void printContainer(
+      std::ostream &out,
+      const Container &container)
   {
-    LIter< pair_t > seqsTail;
-    bool seqsHasTail = false;
+    auto it = container.cbegin();
+
+    if (it != container.cend())
+    {
+      out << *it;
+      ++it;
+    }
+
+    for (; it != container.cend(); ++it)
+    {
+      out << " " << *it;
+    }
+  }
+
+  void printNames(
+      std::ostream &out,
+      const List< pair_t > &seqs)
+  {
+    auto it = seqs.cbegin();
+
+    if (it != seqs.cend())
+    {
+      out << it->first;
+      ++it;
+    }
+
+    for (; it != seqs.cend(); ++it)
+    {
+      out << " " << it->first;
+    }
+  }
+
+  void readSequences(
+      std::istream &in,
+      List< pair_t > &seqs)
+  {
     std::string name;
+
+    LIter< pair_t > seqTail;
+    bool hasTail = false;
+
     while (in >> name)
     {
-      List< unsigned long long > nums;
+      List< unsigned long long > numbers;
+
+      unsigned long long value = 0;
+
       LIter< unsigned long long > numTail;
       bool numHasTail = false;
-      unsigned long long num = 0;
-      while (in >> num)
+
+      while (in >> value)
       {
         if (!numHasTail)
         {
-          nums.pushFront(num);
-          numTail = nums.begin();
+          numbers.pushFront(value);
+          numTail = numbers.begin();
           numHasTail = true;
         }
         else
         {
-          numTail = nums.insertAfter(numTail, num);
+          numTail = numbers.insertAfter(
+              numTail,
+              value);
         }
       }
+
       in.clear();
-      pair_t p;
-      p.first = name;
-      p.second = std::move(nums);
-      if (!seqsHasTail)
+
+      pair_t pair;
+      pair.first = name;
+      pair.second = std::move(numbers);
+
+      if (!hasTail)
       {
-        seqs.pushFront(std::move(p));
-        seqsTail = seqs.begin();
-        seqsHasTail = true;
+        seqs.pushFront(std::move(pair));
+        seqTail = seqs.begin();
+        hasTail = true;
       }
       else
       {
-        seqsTail = seqs.insertAfter(seqsTail, std::move(p));
+        seqTail = seqs.insertAfter(
+            seqTail,
+            std::move(pair));
       }
     }
-  }
-
-  void printNames(std::ostream &out, const List< pair_t > &seqs)
-  {
-    bool first = true;
-    for (LCIter< pair_t > it = seqs.cbegin();
-        it != seqs.cend(); ++it)
-    {
-      if (!first)
-      {
-        out << " ";
-      }
-      out << (*it).first;
-      first = false;
-    }
-    out << "\n";
   }
 
   size_t getMaxLen(const List< pair_t > &seqs)
   {
-    size_t maxLen = 0;
-    for (LCIter< pair_t > it = seqs.cbegin();
-        it != seqs.cend(); ++it)
+    size_t result = 0;
+
+    for (auto it = seqs.cbegin();
+        it != seqs.cend();
+        ++it)
     {
-      const size_t len = (*it).second.size();
-      if (len > maxLen)
+      if (it->second.size() > result)
       {
-        maxLen = len;
+        result = it->second.size();
       }
     }
-    return maxLen;
+
+    return result;
   }
 
-  void printRow(std::ostream &out,
-      const List< unsigned long long > &row)
+  int process(
+      std::ostream &out,std::ostream &err,List< pair_t > &seqs)
   {
-    bool first = true;
-    for (LCIter< unsigned long long > it = row.cbegin();
-        it != row.cend(); ++it)
+    size_t maxLen = getMaxLen(seqs);
+
+    if (maxLen == 0)
     {
-      if (!first)
-      {
-        out << " ";
-      }
-      out << *it;
-      first = false;
+      out << "0\n";
+      return 0;
     }
-    out << "\n";
-  }
 
-  int buildAndPrint(std::ostream &out, std::ostream &err,
-      List< pair_t > &seqs, size_t maxLen)
-  {
     List< LIter< unsigned long long > > iters;
-    LIter< LIter< unsigned long long > > itersTail;
-    bool itersHasTail = false;
-    for (LIter< pair_t > it = seqs.begin();
-        it != seqs.end(); ++it)
+
     {
-      const LIter< unsigned long long > numIt =
-          (*it).second.begin();
-      if (!itersHasTail)
+      bool first = true;
+      LIter< LIter< unsigned long long > > tail;
+
+      for (auto it = seqs.begin();
+          it != seqs.end();
+          ++it)
       {
-        iters.pushFront(numIt);
-        itersTail = iters.begin();
-        itersHasTail = true;
-      }
-      else
-      {
-        itersTail = iters.insertAfter(itersTail, numIt);
+        if (first)
+        {
+          iters.pushFront(it->second.begin());
+          tail = iters.begin();
+          first = false;
+        }
+        else
+        {
+          tail = iters.insertAfter(
+              tail,
+              it->second.begin());
+        }
       }
     }
-
-    List< List< unsigned long long > > rows;
-    LIter< List< unsigned long long > > rowsTail;
-    bool rowsTailSet = false;
 
     List< unsigned long long > sums;
-    LIter< unsigned long long > sumsTail;
-    bool sumsTailSet = false;
+
+    bool sumTailSet = false;
+    LIter< unsigned long long > sumTail;
+
     bool overflow = false;
 
-    const unsigned long long maxVal =
-        std::numeric_limits< unsigned long long >::max();
+    const unsigned long long maxValue =
+        std::numeric_limits<
+            unsigned long long
+        >::max();
 
-    for (size_t col = 0; col < maxLen; ++col)
+    for (size_t column = 0;
+        column < maxLen;
+        ++column)
     {
       List< unsigned long long > row;
-      LIter< unsigned long long > rowTail;
+
       bool rowTailSet = false;
+      LIter< unsigned long long > rowTail;
+
       unsigned long long sum = 0;
 
-      LIter< LIter< unsigned long long > > curIt =
-          iters.begin();
-      for (LIter< pair_t > seqIt = seqs.begin();
-          seqIt != seqs.end(); ++seqIt, ++curIt)
+      auto iterIt = iters.begin();
+
+      for (auto seqIt = seqs.begin();
+          seqIt != seqs.end();
+          ++seqIt, ++iterIt)
       {
-        if (col >= (*seqIt).second.size())
+        if (column >= seqIt->second.size())
         {
           continue;
         }
-        const unsigned long long val = *(*curIt);
+
+        unsigned long long value = *(*iterIt);
+
         if (!rowTailSet)
         {
-          row.pushFront(val);
+          row.pushFront(value);
           rowTail = row.begin();
           rowTailSet = true;
         }
         else
         {
-          rowTail = row.insertAfter(rowTail, val);
+          rowTail = row.insertAfter(
+              rowTail,
+              value);
         }
+
         if (!overflow)
         {
-          if (sum > maxVal - val)
+          if (sum > maxValue - value)
           {
             overflow = true;
           }
           else
           {
-            sum += val;
+            sum += value;
           }
         }
-        ++(*curIt);
+
+        ++(*iterIt);
       }
 
-      if (!rowsTailSet)
-      {
-        rows.pushFront(row);
-        rowsTail = rows.begin();
-        rowsTailSet = true;
-      }
-      else
-      {
-        rowsTail = rows.insertAfter(rowsTail, row);
-      }
+      printContainer(out, row);
+      out << "\n";
+
       if (!overflow)
       {
-        if (!sumsTailSet)
+        if (!sumTailSet)
         {
           sums.pushFront(sum);
-          sumsTail = sums.begin();
-          sumsTailSet = true;
+          sumTail = sums.begin();
+          sumTailSet = true;
         }
         else
         {
-          sumsTail = sums.insertAfter(sumsTail, sum);
+          sumTail = sums.insertAfter(
+              sumTail,
+              sum);
         }
       }
-    }
-
-    for (LIter< List< unsigned long long > > it =
-        rows.begin(); it != rows.end(); ++it)
-    {
-      printRow(out, *it);
     }
 
     if (overflow)
@@ -210,37 +244,35 @@ namespace burukov
       return 1;
     }
 
-    bool first = true;
-    for (LIter< unsigned long long > it = sums.begin();
-        it != sums.end(); ++it)
-    {
-      if (!first)
-      {
-        out << " ";
-      }
-      out << *it;
-      first = false;
-    }
+    printContainer(out, sums);
     out << "\n";
+
     return 0;
   }
 }
 
 int main()
 {
-  burukov::List< burukov::pair_t > seqs;
-  burukov::readSequences(std::cin, seqs);
-  if (seqs.empty())
+  burukov::List< burukov::pair_t > sequences;
+
+  burukov::readSequences(
+      std::cin,
+      sequences);
+
+  if (sequences.empty())
   {
-    std::cout << 0 << "\n";
+    std::cout << "0\n";
     return 0;
   }
-  burukov::printNames(std::cout, seqs);
-  const size_t maxLen = burukov::getMaxLen(seqs);
-  if (maxLen == 0)
-  {
-    std::cout << 0 << "\n";
-    return 0;
-  }
-  return burukov::buildAndPrint(std::cout, std::cerr, seqs, maxLen);
+
+  burukov::printNames(
+      std::cout,
+      sequences);
+
+  std::cout << "\n";
+
+  return burukov::process(
+      std::cout,
+      std::cerr,
+      sequences);
 }
