@@ -144,12 +144,6 @@ namespace burukov
 
     detail::Node< T > *getBefore(LIter< T > it);
     detail::Node< T > *getNodeAt(size_t index);
-
-    template< class... Args >
-    detail::Node< T > *createNode(Args &&...args);
-
-    template< class... Args >
-    detail::Node< T > *createNodeWithNext(detail::Node< T > *next, Args &&...args);
   };
 }
 
@@ -389,24 +383,10 @@ namespace burukov
   }
 
   template< class T >
-  template< class... Args >
-  detail::Node< T > *List< T >::createNode(Args &&...args)
-  {
-    return new detail::Node< T >(std::forward< Args >(args)...);
-  }
-
-  template< class T >
-  template< class... Args >
-  detail::Node< T > *List< T >::createNodeWithNext(detail::Node< T > *next, Args &&...args)
-  {
-    return new detail::Node< T >(std::forward< Args >(args)..., next);
-  }
-
-  template< class T >
   template< class U >
   void List< T >::pushFront(U &&value)
   {
-    head_ = createNodeWithNext(head_, std::forward< U >(value));
+    head_ = new detail::Node< T >(std::forward< U >(value), head_);
     if (!tail_)
     {
       tail_ = head_;
@@ -418,7 +398,7 @@ namespace burukov
   template< class U >
   void List< T >::pushBack(U &&value)
   {
-    detail::Node< T > *created = createNode(std::forward< U >(value));
+    detail::Node< T > *created = new detail::Node< T >(std::forward< U >(value));
     if (!head_)
     {
       head_ = created;
@@ -436,7 +416,7 @@ namespace burukov
   template< class... Args >
   void List< T >::emplaceFront(Args &&...args)
   {
-    head_ = createNodeWithNext(head_, std::forward< Args >(args)...);
+    head_ = new detail::Node< T >(std::forward< Args >(args)..., head_);
     if (!tail_)
     {
       tail_ = head_;
@@ -448,7 +428,7 @@ namespace burukov
   template< class... Args >
   void List< T >::emplaceBack(Args &&...args)
   {
-    detail::Node< T > *created = createNode(std::forward< Args >(args)...);
+    detail::Node< T > *created = new detail::Node< T >(std::forward< Args >(args)...);
     if (!head_)
     {
       head_ = created;
@@ -470,8 +450,8 @@ namespace burukov
     {
       return end();
     }
-    detail::Node< T > *created = createNodeWithNext(pos.get()->next_,
-                                                    std::forward< Args >(args)...);
+    detail::Node< T > *created = new detail::Node< T >(
+      std::forward< Args >(args)..., pos.get()->next_);
     pos.get()->next_ = created;
     if (tail_ == pos.get())
     {
