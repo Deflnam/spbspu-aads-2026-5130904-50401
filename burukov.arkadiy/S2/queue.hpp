@@ -26,6 +26,9 @@ namespace burukov
     void push(const T &value);
     void push(T &&value);
 
+    template< class... Args >
+    void emplace(Args &&...args);
+
     void pop() noexcept;
 
     void swap(Queue &other) noexcept;
@@ -103,6 +106,13 @@ template< class T >
 void burukov::Queue< T >::push(T &&value)
 {
   list_.pushBack(std::move(value));
+}
+
+template< class T >
+template< class... Args >
+void burukov::Queue< T >::emplace(Args &&...args)
+{
+  list_.emplaceBack(std::forward< Args >(args)...);
 }
 
 template< class T >
