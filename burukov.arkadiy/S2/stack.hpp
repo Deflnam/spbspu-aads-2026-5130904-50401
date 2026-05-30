@@ -9,49 +9,80 @@ namespace burukov
   class Stack
   {
   public:
-    T &top()
-    {
-      return list_.front();
-    }
+    Stack() = default;
 
-    const T &top() const
-    {
-      return list_.front();
-    }
+    T &top();
+    const T &top() const;
 
-    bool empty() const
-    {
-      return list_.size() == 0;
-    }
+    bool empty() const noexcept;
+    size_t size() const noexcept;
 
-    size_t size() const
-    {
-      return list_.size();
-    }
+    void push(const T &value);
+    void push(T &&value);
 
-    void push(const T &value)
-    {
-      list_.pushFront(value);
-    }
+    void pop() noexcept;
 
-    void pop()
-    {
-      list_.popFront();
-    }
+    void swap(Stack &other) noexcept;
 
-    void swap(Stack &other)
-    {
-      list_.swap(other.list_);
-    }
-
-    void clear()
-    {
-      list_.clear();
-    }
+    void clear() noexcept;
 
   private:
     List< T > list_;
   };
+}
+
+template< class T >
+T &burukov::Stack< T >::top()
+{
+  return list_.front();
+}
+
+template< class T >
+const T &burukov::Stack< T >::top() const
+{
+  return list_.front();
+}
+
+template< class T >
+bool burukov::Stack< T >::empty() const noexcept
+{
+  return list_.size() == 0;
+}
+
+template< class T >
+size_t burukov::Stack< T >::size() const noexcept
+{
+  return list_.size();
+}
+
+template< class T >
+void burukov::Stack< T >::push(const T &value)
+{
+  list_.pushFront(value);
+}
+
+template< class T >
+void burukov::Stack< T >::push(T &&value)
+{
+  list_.pushFront(std::move(value));
+}
+
+template< class T >
+void burukov::Stack< T >::pop() noexcept
+{
+  list_.popFront();
+}
+
+template< class T >
+void burukov::Stack< T >::swap(Stack &other) noexcept
+{
+  list_.swap(other.list_);
+}
+
+template< class T >
+void burukov::Stack< T >::clear() noexcept
+{
+  list_.clear();
 }
 
 #endif
