@@ -3,14 +3,14 @@
 
 BOOST_AUTO_TEST_SUITE(StackTest)
 
-BOOST_AUTO_TEST_CASE(DefaultConstructor)
+BOOST_AUTO_TEST_CASE(defaultConstructor)
 {
   burukov::Stack< int > s;
   BOOST_CHECK(s.empty());
   BOOST_CHECK(s.size() == 0);
 }
 
-BOOST_AUTO_TEST_CASE(PushAndTop)
+BOOST_AUTO_TEST_CASE(pushAndTop)
 {
   burukov::Stack< int > s;
   s.push(1);
@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(PushAndTop)
   BOOST_CHECK(s.top() == 3);
 }
 
-BOOST_AUTO_TEST_CASE(PopOrder)
+BOOST_AUTO_TEST_CASE(popOrder)
 {
   burukov::Stack< int > s;
   s.push(1);
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(PopOrder)
   BOOST_CHECK(s.empty());
 }
 
-BOOST_AUTO_TEST_CASE(SizeTracking)
+BOOST_AUTO_TEST_CASE(sizeTracking)
 {
   burukov::Stack< int > s;
   BOOST_CHECK(s.size() == 0);
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(SizeTracking)
   BOOST_CHECK(s.size() == 1);
 }
 
-BOOST_AUTO_TEST_CASE(CopyBehavior)
+BOOST_AUTO_TEST_CASE(copyBehavior)
 {
   burukov::Stack< int > s1;
   s1.push(1);
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(CopyBehavior)
   BOOST_CHECK(s1.top() == 2);
 }
 
-BOOST_AUTO_TEST_CASE(MoveBehavior)
+BOOST_AUTO_TEST_CASE(moveBehavior)
 {
   burukov::Stack< int > s1;
   s1.push(1);
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(MoveBehavior)
   BOOST_CHECK(s1.empty());
 }
 
-BOOST_AUTO_TEST_CASE(CopyAssignment)
+BOOST_AUTO_TEST_CASE(copyAssignment)
 {
   burukov::Stack< int > s1;
   s1.push(10);
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(CopyAssignment)
   BOOST_CHECK(s2.top() == 20);
 }
 
-BOOST_AUTO_TEST_CASE(MoveAssignment)
+BOOST_AUTO_TEST_CASE(moveAssignment)
 {
   burukov::Stack< int > s1;
   s1.push(10);
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(MoveAssignment)
   BOOST_CHECK(s1.empty());
 }
 
-BOOST_AUTO_TEST_CASE(SwapTest)
+BOOST_AUTO_TEST_CASE(swapTest)
 {
   burukov::Stack< int > s1;
   s1.push(1);
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(SwapTest)
   BOOST_CHECK(s2.size() == 1);
 }
 
-BOOST_AUTO_TEST_CASE(ClearTest)
+BOOST_AUTO_TEST_CASE(clearTest)
 {
   burukov::Stack< int > s;
   s.push(1);
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(ClearTest)
   BOOST_CHECK(s.empty());
 }
 
-BOOST_AUTO_TEST_CASE(StringStack)
+BOOST_AUTO_TEST_CASE(stringStack)
 {
   burukov::Stack< std::string > s;
   s.push("hello");
