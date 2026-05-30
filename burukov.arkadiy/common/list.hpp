@@ -24,6 +24,9 @@ namespace burukov
 
       template< class U >
       Node(U &&value, Node< T > *next = nullptr);
+
+      template< class... Args >
+      explicit Node(Args &&...args, Node< T > *next = nullptr);
     };
   }
 
@@ -99,6 +102,15 @@ namespace burukov
     template< class U >
     void pushBack(U &&value);
 
+    template< class... Args >
+    void emplaceFront(Args &&...args);
+
+    template< class... Args >
+    void emplaceBack(Args &&...args);
+
+    template< class... Args >
+    LIter< T > emplaceAfter(LIter< T > pos, Args &&...args);
+
     void popFront();
 
     template< class U >
@@ -132,6 +144,12 @@ namespace burukov
 
     detail::Node< T > *getBefore(LIter< T > it);
     detail::Node< T > *getNodeAt(size_t index);
+
+    template< class... Args >
+    detail::Node< T > *createNode(Args &&...args);
+
+    template< class... Args >
+    detail::Node< T > *createNodeWithNext(detail::Node< T > *next, Args &&...args);
   };
 }
 
@@ -141,6 +159,12 @@ namespace burukov::detail
   template< class U >
   Node< T >::Node(U &&value, Node< T > *next)
     : value_(std::forward< U >(value)), next_(next)
+  {}
+
+  template< class T >
+  template< class... Args >
+  Node< T >::Node(Args &&...args, Node< T > *next)
+    : value_(std::forward< Args >(args)...), next_(next)
   {}
 }
 
@@ -365,10 +389,24 @@ namespace burukov
   }
 
   template< class T >
+  template< class... Args >
+  detail::Node< T > *List< T >::createNode(Args &&...args)
+  {
+    return new detail::Node< T >(std::forward< Args >(args)...);
+  }
+
+  template< class T >
+  template< class... Args >
+  detail::Node< T > *List< T >::createNodeWithNext(detail::Node< T > *next, Args &&...args)
+  {
+    return new detail::Node< T >(std::forward< Args >(args)..., next);
+  }
+
+  template< class T >
   template< class U >
   void List< T >::pushFront(U &&value)
   {
-    head_ = new detail::Node< T >(std::forward< U >(value), head_);
+    head_ = createNodeWithNext(head_, std::forward< U >(value));
     if (!tail_)
     {
       tail_ = head_;
@@ -380,7 +418,7 @@ namespace burukov
   template< class U >
   void List< T >::pushBack(U &&value)
   {
-    detail::Node< T > *created = new detail::Node< T >(std::forward< U >(value));
+    detail::Node< T > *created = createNode(std::forward< U >(value));
     if (!head_)
     {
       head_ = created;
@@ -392,6 +430,55 @@ namespace burukov
       tail_ = created;
     }
     ++size_;
+  }
+
+  template< class T >
+  template< class... Args >
+  void List< T >::emplaceFront(Args &&...args)
+  {
+    head_ = createNodeWithNext(head_, std::forward< Args >(args)...);
+    if (!tail_)
+    {
+      tail_ = head_;
+    }
+    ++size_;
+  }
+
+  template< class T >
+  template< class... Args >
+  void List< T >::emplaceBack(Args &&...args)
+  {
+    detail::Node< T > *created = createNode(std::forward< Args >(args)...);
+    if (!head_)
+    {
+      head_ = created;
+      tail_ = created;
+    }
+    else
+    {
+      tail_->next_ = created;
+      tail_ = created;
+    }
+    ++size_;
+  }
+
+  template< class T >
+  template< class... Args >
+  LIter< T > List< T >::emplaceAfter(LIter< T > pos, Args &&...args)
+  {
+    if (pos == end())
+    {
+      return end();
+    }
+    detail::Node< T > *created = createNodeWithNext(pos.get()->next_,
+                                                    std::forward< Args >(args)...);
+    pos.get()->next_ = created;
+    if (tail_ == pos.get())
+    {
+      tail_ = created;
+    }
+    ++size_;
+    return LIter< T >(created);
   }
 
   template< class T >
@@ -415,19 +502,7 @@ namespace burukov
   template< class U >
   LIter< T > List< T >::insertAfter(LIter< T > pos, U &&value)
   {
-    if (pos == end())
-    {
-      return end();
-    }
-    detail::Node< T > *created = new detail::Node< T >(
-      std::forward< U >(value), pos.get()->next_);
-    pos.get()->next_ = created;
-    if (tail_ == pos.get())
-    {
-      tail_ = created;
-    }
-    ++size_;
-    return LIter< T >(created);
+    return emplaceAfter(pos, std::forward< U >(value));
   }
 
   template< class T >
