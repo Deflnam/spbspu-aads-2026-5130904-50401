@@ -1,10 +1,12 @@
+#define BOOST_TEST_MODULE S2
+#include <boost/test/included/unit_test.hpp>
 #include <boost/test/unit_test.hpp>
 #include <sstream>
 #include "mathFunctions.hpp"
 
 BOOST_AUTO_TEST_SUITE(BitwiseAndTest)
 
-BOOST_AUTO_TEST_CASE(BasicValues)
+BOOST_AUTO_TEST_CASE(basicValues)
 {
   BOOST_CHECK(burukov::bitwiseAnd(12, 10) == 8);
   BOOST_CHECK(burukov::bitwiseAnd(7, 7) == 7);
@@ -14,7 +16,7 @@ BOOST_AUTO_TEST_CASE(BasicValues)
   BOOST_CHECK(burukov::bitwiseAnd(-1, 7) == 7);
 }
 
-BOOST_AUTO_TEST_CASE(ExpressionEvaluation)
+BOOST_AUTO_TEST_CASE(expressionEvaluation)
 {
   std::string input = "( 3 + 5 ) & 6\n7 & 5\n";
   std::istringstream iss(input);
@@ -42,7 +44,7 @@ BOOST_AUTO_TEST_CASE(ExpressionEvaluation)
   BOOST_CHECK(output == "5 0");
 }
 
-BOOST_AUTO_TEST_CASE(PriorityCheck)
+BOOST_AUTO_TEST_CASE(operatorPriority)
 {
   std::string input = "2 + 3 & 7\n";
   std::istringstream iss(input);
@@ -54,7 +56,7 @@ BOOST_AUTO_TEST_CASE(PriorityCheck)
   BOOST_CHECK(res == "5");
 }
 
-BOOST_AUTO_TEST_CASE(AndWithParentheses)
+BOOST_AUTO_TEST_CASE(andWithParentheses)
 {
   std::string input = "15 & ( 3 + 4 )\n";
   std::istringstream iss(input);
