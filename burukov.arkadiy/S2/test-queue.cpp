@@ -3,14 +3,14 @@
 
 BOOST_AUTO_TEST_SUITE(QueueTest)
 
-BOOST_AUTO_TEST_CASE(DefaultConstructor)
+BOOST_AUTO_TEST_CASE(defaultConstructor)
 {
   burukov::Queue< int > q;
   BOOST_CHECK(q.empty());
   BOOST_CHECK(q.size() == 0);
 }
 
-BOOST_AUTO_TEST_CASE(PushAndFront)
+BOOST_AUTO_TEST_CASE(pushAndFront)
 {
   burukov::Queue< int > q;
   q.push(1);
@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(PushAndFront)
   BOOST_CHECK(q.front() == 1);
 }
 
-BOOST_AUTO_TEST_CASE(PopOrder)
+BOOST_AUTO_TEST_CASE(popOrder)
 {
   burukov::Queue< int > q;
   q.push(1);
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(PopOrder)
   BOOST_CHECK(q.empty());
 }
 
-BOOST_AUTO_TEST_CASE(FifoOrder)
+BOOST_AUTO_TEST_CASE(fifoOrder)
 {
   burukov::Queue< int > q;
   for (int i = 0; i < 10; ++i)
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(FifoOrder)
   BOOST_CHECK(q.empty());
 }
 
-BOOST_AUTO_TEST_CASE(SizeTracking)
+BOOST_AUTO_TEST_CASE(sizeTracking)
 {
   burukov::Queue< int > q;
   BOOST_CHECK(q.size() == 0);
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(SizeTracking)
   BOOST_CHECK(q.size() == 1);
 }
 
-BOOST_AUTO_TEST_CASE(CopyBehavior)
+BOOST_AUTO_TEST_CASE(copyBehavior)
 {
   burukov::Queue< int > q1;
   q1.push(1);
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(CopyBehavior)
   BOOST_CHECK(q1.front() == 1);
 }
 
-BOOST_AUTO_TEST_CASE(CopyThenPush)
+BOOST_AUTO_TEST_CASE(copyThenPush)
 {
   burukov::Queue< int > q1;
   q1.push(1);
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(CopyThenPush)
   BOOST_CHECK(q1.size() == 2);
 }
 
-BOOST_AUTO_TEST_CASE(MoveBehavior)
+BOOST_AUTO_TEST_CASE(moveBehavior)
 {
   burukov::Queue< int > q1;
   q1.push(1);
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(MoveBehavior)
   BOOST_CHECK(q1.empty());
 }
 
-BOOST_AUTO_TEST_CASE(CopyAssignment)
+BOOST_AUTO_TEST_CASE(copyAssignment)
 {
   burukov::Queue< int > q1;
   q1.push(10);
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(CopyAssignment)
   BOOST_CHECK(q2.front() == 20);
 }
 
-BOOST_AUTO_TEST_CASE(MoveAssignment)
+BOOST_AUTO_TEST_CASE(moveAssignment)
 {
   burukov::Queue< int > q1;
   q1.push(10);
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(MoveAssignment)
   BOOST_CHECK(q1.empty());
 }
 
-BOOST_AUTO_TEST_CASE(SwapTest)
+BOOST_AUTO_TEST_CASE(swapTest)
 {
   burukov::Queue< int > q1;
   q1.push(1);
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(SwapTest)
   BOOST_CHECK(q2.size() == 1);
 }
 
-BOOST_AUTO_TEST_CASE(ClearTest)
+BOOST_AUTO_TEST_CASE(clearTest)
 {
   burukov::Queue< int > q;
   q.push(1);
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE(ClearTest)
   BOOST_CHECK(q.empty());
 }
 
-BOOST_AUTO_TEST_CASE(StringQueue)
+BOOST_AUTO_TEST_CASE(stringQueue)
 {
   burukov::Queue< std::string > q;
   q.push("first");
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE(StringQueue)
   BOOST_CHECK(q.front() == "third");
 }
 
-BOOST_AUTO_TEST_CASE(PopAllThenPush)
+BOOST_AUTO_TEST_CASE(popAllThenPush)
 {
   burukov::Queue< int > q;
   q.push(1);
