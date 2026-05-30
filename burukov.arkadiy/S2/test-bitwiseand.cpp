@@ -26,9 +26,7 @@ BOOST_AUTO_TEST_CASE(ExpressionEvaluation)
   {
     const burukov::Queue< std::string > inf = infix.top();
     infix.pop();
-    burukov::Queue< std::string > postfix;
-    burukov::convertToPostfix(inf, postfix);
-    const std::string res = burukov::calculate(postfix);
+    std::string res = burukov::evaluateExpression(inf);
     results.push(res);
   }
 
@@ -52,9 +50,7 @@ BOOST_AUTO_TEST_CASE(PriorityCheck)
   burukov::getInfix(iss, infix);
 
   const burukov::Queue< std::string > inf = infix.top();
-  burukov::Queue< std::string > postfix;
-  burukov::convertToPostfix(inf, postfix);
-  const std::string res = burukov::calculate(postfix);
+  std::string res = burukov::evaluateExpression(inf);
   BOOST_CHECK(res == "5");
 }
 
@@ -66,9 +62,7 @@ BOOST_AUTO_TEST_CASE(AndWithParentheses)
   burukov::getInfix(iss, infix);
 
   const burukov::Queue< std::string > inf = infix.top();
-  burukov::Queue< std::string > postfix;
-  burukov::convertToPostfix(inf, postfix);
-  const std::string res = burukov::calculate(postfix);
+  std::string res = burukov::evaluateExpression(inf);
   BOOST_CHECK(res == "7");
 }
 
