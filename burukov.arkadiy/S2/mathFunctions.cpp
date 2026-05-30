@@ -1,5 +1,4 @@
 #include "mathFunctions.hpp"
-#include <cerrno>
 #include <cstdlib>
 #include <iostream>
 #include <limits>
@@ -8,31 +7,7 @@
 
 namespace burukov
 {
-  bool isOperand(const std::string &sym)
-  {
-    return sym != "+" && sym != "-" && sym != "*"
-        && sym != "/" && sym != "%" && sym != "&"
-        && sym != "(" && sym != ")";
-  }
-
-  int getPriority(const std::string &sym)
-  {
-    if (sym == "&")
-    {
-      return 0;
-    }
-    if (sym == "+" || sym == "-")
-    {
-      return 1;
-    }
-    if (sym == "*" || sym == "/" || sym == "%")
-    {
-      return 2;
-    }
-    return -1;
-  }
-
-  lli_t add(const lli_t lhs, const lli_t rhs)
+  lli_t add(lli_t lhs, lli_t rhs)
   {
     const lli_t maxVal = std::numeric_limits< lli_t >::max();
     const lli_t minVal = std::numeric_limits< lli_t >::min();
@@ -47,7 +22,7 @@ namespace burukov
     return lhs + rhs;
   }
 
-  lli_t sub(const lli_t lhs, const lli_t rhs)
+  lli_t sub(lli_t lhs, lli_t rhs)
   {
     const lli_t maxVal = std::numeric_limits< lli_t >::max();
     const lli_t minVal = std::numeric_limits< lli_t >::min();
@@ -62,7 +37,7 @@ namespace burukov
     return lhs - rhs;
   }
 
-  lli_t mul(const lli_t lhs, const lli_t rhs)
+  lli_t mul(lli_t lhs, lli_t rhs)
   {
     const lli_t maxVal = std::numeric_limits< lli_t >::max();
     const lli_t minVal = std::numeric_limits< lli_t >::min();
@@ -123,7 +98,7 @@ namespace burukov
     return lhs * rhs;
   }
 
-  lli_t div(const lli_t lhs, const lli_t rhs)
+  lli_t div(lli_t lhs, lli_t rhs)
   {
     const lli_t minVal = std::numeric_limits< lli_t >::min();
     if (rhs == 0)
@@ -137,7 +112,7 @@ namespace burukov
     return lhs / rhs;
   }
 
-  lli_t mod(const lli_t lhs, const lli_t rhs)
+  lli_t mod(lli_t lhs, lli_t rhs)
   {
     const lli_t minVal = std::numeric_limits< lli_t >::min();
     if (rhs == 0)
@@ -148,67 +123,47 @@ namespace burukov
     {
       throw std::overflow_error("Mod overflow");
     }
-
     lli_t result = lhs % rhs;
-
     if ((result > 0) != (rhs > 0) && result != 0)
     {
-        result += rhs;
+      result += rhs;
     }
     return result;
   }
 
-  lli_t bitwiseAnd(const lli_t lhs, const lli_t rhs)
+  lli_t bitwiseAnd(lli_t lhs, lli_t rhs)
   {
     return lhs & rhs;
   }
+}
 
-  void getInfix(std::istream &in,
-      Stack< Queue< std::string > > &infix)
+namespace burukov::detail
+{
+  bool isOperation(const std::string &sym)
   {
-    char sym = 0;
-    std::string current;
-    Queue< std::string > expression;
-    while (in.get(sym))
+    return sym == "+" || sym == "-" || sym == "*"
+        || sym == "/" || sym == "%" || sym == "&";
+  }
+
+  int getPriority(const std::string &sym)
+  {
+    if (sym == "&")
     {
-      if (sym == '\n')
-      {
-        if (!current.empty())
-        {
-          expression.push(current);
-          current.clear();
-        }
-        if (!expression.empty())
-        {
-          infix.push(expression);
-          expression.clear();
-        }
-      }
-      else if (sym == ' ' || sym == '\t')
-      {
-        if (!current.empty())
-        {
-          expression.push(current);
-          current.clear();
-        }
-      }
-      else
-      {
-        current += sym;
-      }
+      return 1;
     }
-    if (!current.empty())
+    if (sym == "+" || sym == "-")
     {
-      expression.push(current);
+      return 0;
     }
-    if (!expression.empty())
+    if (sym == "*" || sym == "/" || sym == "%")
     {
-      infix.push(expression);
+      return 2;
     }
+    return -1;
   }
 
   void convertToPostfix(const Queue< std::string > &infix,
-      Queue< std::string > &postfix)
+                        Queue< std::string > &postfix)
   {
     Queue< std::string > infixCopy = infix;
     Stack< std::string > ops;
@@ -235,7 +190,7 @@ namespace burukov
         ops.pop();
         continue;
       }
-      if (isOperand(sym))
+      if (!isOperation(sym))
       {
         postfix.push(sym);
       }
@@ -280,14 +235,20 @@ namespace burukov
     funcs.pushFront(sub);
     funcs.pushFront(add);
 
-    Stack< std::string > nums;
+    Stack< lli_t > nums;
     while (!postfixCopy.empty())
     {
       const std::string sym = postfixCopy.front();
       postfixCopy.pop();
-      if (isOperand(sym))
+      if (!isOperation(sym))
       {
-        nums.push(sym);
+        size_t pos = 0;
+        lli_t num = std::stoll(sym, &pos);
+        if (pos != sym.size())
+        {
+          throw std::invalid_argument("Invalid number");
+        }
+        nums.push(num);
       }
       else
       {
@@ -304,24 +265,9 @@ namespace burukov
           ++index;
         }
 
-        const char *str1 = nums.top().c_str();
-        char *end1 = nullptr;
-        errno = 0;
-        const lli_t num1 = std::strtoll(str1, &end1, 10);
-        if (end1 == str1 || *end1 != '\0' || errno == ERANGE)
-        {
-          throw std::invalid_argument("Input error");
-        }
+        lli_t num1 = nums.top();
         nums.pop();
-
-        const char *str2 = nums.top().c_str();
-        char *end2 = nullptr;
-        errno = 0;
-        const lli_t num2 = std::strtoll(str2, &end2, 10);
-        if (end2 == str2 || *end2 != '\0' || errno == ERANGE)
-        {
-          throw std::invalid_argument("Input error");
-        }
+        lli_t num2 = nums.top();
         nums.pop();
 
         LIter< func_t > funcIt = funcs.begin();
@@ -329,14 +275,67 @@ namespace burukov
         {
           ++funcIt;
         }
-        const lli_t result = (*funcIt)(num2, num1);
-        nums.push(std::to_string(result));
+        lli_t result = (*funcIt)(num2, num1);
+        nums.push(result);
       }
     }
     if (nums.size() != 1)
     {
-      throw std::invalid_argument("Input error");
+      throw std::invalid_argument("Invalid expression");
     }
-    return nums.top();
+    return std::to_string(nums.top());
+  }
+}
+
+namespace burukov
+{
+  void getInfix(std::istream &in, Stack< Queue< std::string > > &infix)
+  {
+    char sym = 0;
+    std::string current;
+    Queue< std::string > expression;
+    while (in.get(sym))
+    {
+      if (sym == '\n')
+      {
+        if (!current.empty())
+        {
+          expression.push(current);
+          current.clear();
+        }
+        if (!expression.empty())
+        {
+          infix.push(expression);
+          expression.clear();
+        }
+      }
+      else if (sym == ' ' || sym == '\t')
+      {
+        if (!current.empty())
+        {
+          expression.push(current);
+          current.clear();
+        }
+      }
+      else
+      {
+        current += sym;
+      }
+    }
+    if (!current.empty())
+    {
+      expression.push(current);
+    }
+    if (!expression.empty())
+    {
+      infix.push(expression);
+    }
+  }
+
+  std::string evaluateExpression(const Queue< std::string > &infix)
+  {
+    Queue< std::string > postfix;
+    detail::convertToPostfix(infix, postfix);
+    return detail::calculate(postfix);
   }
 }
