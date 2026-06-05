@@ -90,6 +90,8 @@ namespace burukov
     LIter< T > end();
     LCIter< T > cbegin() const;
     LCIter< T > cend() const;
+    LCIter< T > begin() const;
+    LCIter< T > end() const;
 
     template< class U >
     void pushFront(U &&value);
@@ -112,6 +114,8 @@ namespace burukov
     LIter< T > insertAfter(LIter< T > pos, U &&value);
 
     LIter< T > eraseAfter(LIter< T > pos);
+
+    LIter< T > erase(LIter< T > pos);
 
     void clear();
     void swap(List< T > &other);
@@ -370,6 +374,18 @@ namespace burukov
   }
 
   template< class T >
+  LCIter< T > List< T >::begin() const
+  {
+    return cbegin();
+  }
+
+  template< class T >
+  LCIter< T > List< T >::end() const
+  {
+    return cend();
+  }
+
+  template< class T >
   template< class U >
   void List< T >::pushFront(U &&value)
   {
@@ -506,6 +522,30 @@ namespace burukov
     ::operator delete(victim);
     --size_;
     return LIter< T >(pos.get()->next_);
+  }
+
+  template< class T >
+  LIter< T > List< T >::erase(LIter< T > pos)
+  {
+    if (pos == end())
+    {
+      return end();
+    }
+    if (pos.get() == head_)
+    {
+      popFront();
+      return begin();
+    }
+    detail::Node< T > *prev = getBefore(pos);
+    prev->next_ = pos.get()->next_;
+    if (tail_ == pos.get())
+    {
+      tail_ = prev;
+    }
+    pos.get()->value_.~T();
+    ::operator delete(pos.get());
+    --size_;
+    return LIter< T >(prev->next_);
   }
 
   template< class T >
