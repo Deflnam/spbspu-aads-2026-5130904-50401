@@ -28,9 +28,7 @@ namespace burukov
     {
       ++current_position_;
       if (current_position_ != end_position_)
-      {
         return *this;
-      }
       ++bucket_index_;
       findValid();
       return *this;
@@ -39,17 +37,11 @@ namespace burukov
     bool operator==(const HashIterator &other) const
     {
       if (data_ == nullptr && other.data_ == nullptr)
-      {
         return true;
-      }
       if (data_ == nullptr || other.data_ == nullptr)
-      {
         return false;
-      }
       if (bucket_index_ >= capacity_ && other.bucket_index_ >= other.capacity_)
-      {
         return true;
-      }
       return bucket_index_ == other.bucket_index_ && current_position_ == other.current_position_;
     }
 
@@ -82,9 +74,7 @@ namespace burukov
         current_position_ = (*data_)[bucket_index_].begin();
         end_position_ = (*data_)[bucket_index_].end();
         if (current_position_ != end_position_)
-        {
           return;
-        }
         ++bucket_index_;
       }
       data_ = nullptr;
@@ -110,9 +100,7 @@ namespace burukov
     {
       ++current_position_;
       if (current_position_ != end_position_)
-      {
         return *this;
-      }
       ++bucket_index_;
       findValid();
       return *this;
@@ -121,17 +109,11 @@ namespace burukov
     bool operator==(const ConstHashIterator &other) const
     {
       if (data_ == nullptr && other.data_ == nullptr)
-      {
         return true;
-      }
       if (data_ == nullptr || other.data_ == nullptr)
-      {
         return false;
-      }
       if (bucket_index_ >= capacity_ && other.bucket_index_ >= other.capacity_)
-      {
         return true;
-      }
       return bucket_index_ == other.bucket_index_ && current_position_ == other.current_position_;
     }
 
@@ -164,9 +146,7 @@ namespace burukov
         current_position_ = (*data_)[bucket_index_].cbegin();
         end_position_ = (*data_)[bucket_index_].cend();
         if (current_position_ != end_position_)
-        {
           return;
-        }
         ++bucket_index_;
       }
       data_ = nullptr;

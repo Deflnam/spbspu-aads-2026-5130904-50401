@@ -32,8 +32,8 @@ namespace burukov
     LIter();
     explicit LIter(detail::Node< T > *ptr);
 
-    T &operator*();
-    T *operator->();
+    T &operator*() const;
+    T *operator->() const;
 
     LIter< T > &operator++();
     LIter< T > operator++(int);
@@ -164,13 +164,13 @@ namespace burukov
   LIter< T >::LIter(detail::Node< T > *ptr) : ptr_(ptr) {}
 
   template< class T >
-  T &LIter< T >::operator*()
+  T &LIter< T >::operator*() const
   {
     return ptr_->value_;
   }
 
   template< class T >
-  T *LIter< T >::operator->()
+  T *LIter< T >::operator->() const
   {
     return std::addressof(ptr_->value_);
   }
