@@ -146,13 +146,16 @@ namespace burukov
   };
 }
 
-namespace burukov::detail
+namespace burukov
 {
-  template< class T >
-  template< class... Args >
-  Node< T >::Node(Args &&...args, Node< T > *next)
-    : value_(std::forward< Args >(args)...), next_(next)
-  {}
+  namespace detail
+  {
+    template< class T >
+    template< class... Args >
+    Node< T >::Node(Args &&...args, Node< T > *next)
+      : value_(std::forward< Args >(args)...), next_(next)
+    {}
+  }
 }
 
 namespace burukov
