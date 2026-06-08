@@ -818,7 +818,7 @@ namespace burukov
       trueTail->next = falseHead;
       head_ = trueHead;
       tail_ = falseTail ? falseTail : trueTail;
-      return falseHead ? LIter< T >(falseHead) : end();
+      return falseHead ? LIter< T >(falseHead) : begin();
     }
     head_ = falseHead;
     tail_ = falseTail;
