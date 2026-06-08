@@ -214,7 +214,7 @@ int main()
   printNames(std::cout, sequences);
 
   size_t maxLen = getMaxLen(sequences);
-  
+
   if (processColumns(std::cout, std::cerr, sequences, maxLen))
   {
     return 1;
