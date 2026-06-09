@@ -139,13 +139,12 @@ private:
   detail::Node<T> *tail_;
   size_t size_;
 
-  void insertAtFront(detail::Node<T> *node);
-  void insertAtBack(detail::Node<T> *node);
-  void insertAfterNode(detail::Node<T> *after, detail::Node<T> *node);
+  void insertNode(detail::Node<T> *after, detail::Node<T> *node);
 
   detail::Node<T> *splitList(detail::Node<T> *head) noexcept;
   template<class Compare>
-  detail::Node<T> *mergeSorted(detail::Node<T> *left, detail::Node<T> *right, Compare comp);
+  detail::Node<T> *mergeSorted(detail::Node<T> *left,
+    detail::Node<T> *right, Compare comp);
   template<class Compare>
   detail::Node<T> *sortList(detail::Node<T> *head, Compare comp);
 
@@ -161,37 +160,37 @@ namespace detail
 {
 
 template<class T>
-Node<T>::Node():
-    value(),
-    next(nullptr)
+Node<T>::Node()
+    : value(),
+      next(nullptr)
 {
 }
 
 template<class T>
-Node<T>::Node(const T &value, Node<T> *next):
-    value(value),
-    next(next)
+Node<T>::Node(const T &value, Node<T> *next)
+    : value(value),
+      next(next)
 {
 }
 
 template<class T>
-Node<T>::Node(T &&value, Node<T> *next):
-    value(std::forward<T>(value)),
-    next(next)
+Node<T>::Node(T &&value, Node<T> *next)
+    : value(std::forward<T>(value)),
+      next(next)
 {
 }
 
 }
 
 template<class T>
-LIter<T>::LIter() noexcept:
-    ptr_(nullptr)
+LIter<T>::LIter() noexcept
+    : ptr_(nullptr)
 {
 }
 
 template<class T>
-LIter<T>::LIter(detail::Node<T> *ptr) noexcept:
-    ptr_(ptr)
+LIter<T>::LIter(detail::Node<T> *ptr) noexcept
+    : ptr_(ptr)
 {
 }
 
@@ -241,14 +240,14 @@ detail::Node<T> *LIter<T>::get() const noexcept
 }
 
 template<class T>
-LCIter<T>::LCIter() noexcept:
-    ptr_(nullptr)
+LCIter<T>::LCIter() noexcept
+    : ptr_(nullptr)
 {
 }
 
 template<class T>
-LCIter<T>::LCIter(const detail::Node<T> *ptr) noexcept:
-    ptr_(ptr)
+LCIter<T>::LCIter(const detail::Node<T> *ptr) noexcept
+    : ptr_(ptr)
 {
 }
 
@@ -292,18 +291,40 @@ bool LCIter<T>::operator!=(const LCIter<T> &rhs) const noexcept
 }
 
 template<class T>
-List<T>::List():
-    head_(nullptr),
-    tail_(nullptr),
-    size_(0)
+void List<T>::insertNode(detail::Node<T> *after, detail::Node<T> *node)
+{
+  if (after == nullptr)
+  {
+    node->next = head_;
+    head_ = node;
+  }
+  else
+  {
+    node->next = after->next;
+    after->next = node;
+  }
+
+  if (tail_ == after || (after == nullptr && tail_ == nullptr))
+  {
+    tail_ = node;
+  }
+
+  ++size_;
+}
+
+template<class T>
+List<T>::List()
+    : head_(nullptr),
+      tail_(nullptr),
+      size_(0)
 {
 }
 
 template<class T>
-List<T>::List(const List<T> &other):
-    head_(nullptr),
-    tail_(nullptr),
-    size_(0)
+List<T>::List(const List<T> &other)
+    : head_(nullptr),
+      tail_(nullptr),
+      size_(0)
 {
   try
   {
@@ -322,10 +343,10 @@ List<T>::List(const List<T> &other):
 }
 
 template<class T>
-List<T>::List(List<T> &&other) noexcept:
-    head_(std::exchange(other.head_, nullptr)),
-    tail_(std::exchange(other.tail_, nullptr)),
-    size_(std::exchange(other.size_, 0))
+List<T>::List(List<T> &&other) noexcept
+    : head_(std::exchange(other.head_, nullptr)),
+      tail_(std::exchange(other.tail_, nullptr)),
+      size_(std::exchange(other.size_, 0))
 {
 }
 
@@ -430,72 +451,27 @@ LCIter<T> List<T>::cend() const noexcept
 }
 
 template<class T>
-void List<T>::insertAtFront(detail::Node<T> *node)
-{
-  node->next = head_;
-  head_ = node;
-
-  if (!tail_)
-  {
-    tail_ = node;
-  }
-
-  ++size_;
-}
-
-template<class T>
-void List<T>::insertAtBack(detail::Node<T> *node)
-{
-  if (!head_)
-  {
-    head_ = node;
-    tail_ = node;
-  }
-  else
-  {
-    tail_->next = node;
-    tail_ = node;
-  }
-
-  ++size_;
-}
-
-template<class T>
-void List<T>::insertAfterNode(detail::Node<T> *after, detail::Node<T> *node)
-{
-  node->next = after->next;
-  after->next = node;
-
-  if (tail_ == after)
-  {
-    tail_ = node;
-  }
-
-  ++size_;
-}
-
-template<class T>
 void List<T>::pushFront(const T &value)
 {
-  insertAtFront(new detail::Node<T>(value));
+  insertNode(nullptr, new detail::Node<T>(value));
 }
 
 template<class T>
 void List<T>::pushFront(T &&value)
 {
-  insertAtFront(new detail::Node<T>(std::forward<T>(value)));
+  insertNode(nullptr, new detail::Node<T>(std::forward<T>(value)));
 }
 
 template<class T>
 void List<T>::pushBack(const T &value)
 {
-  insertAtBack(new detail::Node<T>(value));
+  insertNode(tail_, new detail::Node<T>(value));
 }
 
 template<class T>
 void List<T>::pushBack(T &&value)
 {
-  insertAtBack(new detail::Node<T>(std::forward<T>(value)));
+  insertNode(tail_, new detail::Node<T>(std::forward<T>(value)));
 }
 
 template<class T>
@@ -526,7 +502,7 @@ LIter<T> List<T>::insertAfter(LIter<T> pos, const T &value)
   }
 
   detail::Node<T> *created = new detail::Node<T>(value);
-  insertAfterNode(pos.get(), created);
+  insertNode(pos.get(), created);
 
   return LIter<T>(created);
 }
@@ -540,7 +516,7 @@ LIter<T> List<T>::insertAfter(LIter<T> pos, T &&value)
   }
 
   detail::Node<T> *created = new detail::Node<T>(std::forward<T>(value));
-  insertAfterNode(pos.get(), created);
+  insertNode(pos.get(), created);
 
   return LIter<T>(created);
 }
@@ -614,29 +590,29 @@ void List<T>::spliceAfter(LIter<T> pos, List<T> &other, LIter<T> it) noexcept
 }
 
 template<class T>
-void List<T>::spliceAfter(LIter<T> pos, List<T> &other, LIter<T> first, LIter<T> last) noexcept
+void List<T>::spliceAfter(LIter<T> pos, List<T> &other,
+    LIter<T> first, LIter<T> last) noexcept
 {
   if (first == last || other.empty())
   {
     return;
   }
 
-  if (first.get() == nullptr)
+  if (first.get() == nullptr || first.get()->next == nullptr)
   {
     return;
   }
 
   detail::Node<T> *beforeFirst = first.get();
   detail::Node<T> *firstNode = beforeFirst->next;
+  detail::Node<T> *lastNode = last.get();
 
   if (firstNode == nullptr)
   {
     return;
   }
 
-  detail::Node<T> *lastNode = last.get();
   detail::Node<T> *rangeTail = firstNode;
-
   size_t count = 1;
 
   while (rangeTail->next != lastNode)
@@ -720,7 +696,8 @@ detail::Node<T> *List<T>::splitList(detail::Node<T> *head) noexcept
 
 template<class T>
 template<class Compare>
-detail::Node<T> *List<T>::mergeSorted(detail::Node<T> *left,detail::Node<T> *right, Compare comp)
+detail::Node<T> *List<T>::mergeSorted(detail::Node<T> *left,
+    detail::Node<T> *right, Compare comp)
 {
   detail::Node<T> dummy;
   detail::Node<T> *tail = &dummy;

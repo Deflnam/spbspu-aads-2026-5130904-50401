@@ -182,7 +182,8 @@ void printColumnRow(std::ostream &out, const burukov::List<pair_t> &seqs,
   printContainer(out, row);
 }
 
-bool processColumns(std::ostream &out, std::ostream &err, const burukov::List<pair_t> &seqs, size_t maxLen,
+bool processColumns(std::ostream &out, std::ostream &err,
+    const burukov::List<pair_t> &seqs, size_t maxLen,
     burukov::List<unsigned long long> &sums)
 {
   if (maxLen == 0)
