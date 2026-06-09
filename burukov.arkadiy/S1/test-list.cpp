@@ -431,6 +431,7 @@ BOOST_AUTO_TEST_CASE(SpliceAfterSingleElement)
   auto it = list1.begin();
   ++it;
   auto it2 = list2.begin();
+  ++it2;
 
   list1.spliceAfter(it, list2, it2);
 

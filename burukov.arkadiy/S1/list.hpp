@@ -577,22 +577,19 @@ void List< T >::spliceAfter(LIter< T > pos, List< T > &other) noexcept
 
   if (insertPos == nullptr)
   {
+    head_ = other.head_;
     tail_ = other.tail_;
   }
   else
   {
-    other.tail_->next = insertPos->next;
+    detail::Node< T > *nextAfter = insertPos->next;
     insertPos->next = other.head_;
-  }
+    other.tail_->next = nextAfter;
 
-  if (pos == end() && tail_ == nullptr)
-  {
-    head_ = other.head_;
-    tail_ = other.tail_;
-  }
-  else if (insertPos == tail_)
-  {
-    tail_ = other.tail_;
+    if (insertPos == tail_)
+    {
+      tail_ = other.tail_;
+    }
   }
 
   size_ += other.size_;
@@ -610,9 +607,48 @@ void List< T >::spliceAfter(LIter< T > pos, List< T > &other, LIter< T > it) noe
     return;
   }
 
-  LIter< T > nextIt = it;
-  ++nextIt;
-  spliceAfter(pos, other, it, nextIt);
+  detail::Node< T > *beforeNode = it.get();
+
+  if (!beforeNode || !beforeNode->next)
+  {
+    return;
+  }
+
+  detail::Node< T > *nodeToMove = beforeNode->next;
+
+  beforeNode->next = nodeToMove->next;
+
+  if (nodeToMove == other.tail_)
+  {
+    other.tail_ = beforeNode;
+  }
+
+  other.size_--;
+
+  detail::Node< T > *insertPos = (pos == end()) ? tail_ : pos.get();
+
+  if (insertPos == nullptr)
+  {
+    nodeToMove->next = head_;
+    head_ = nodeToMove;
+
+    if (tail_ == nullptr)
+    {
+      tail_ = nodeToMove;
+    }
+  }
+  else
+  {
+    nodeToMove->next = insertPos->next;
+    insertPos->next = nodeToMove;
+
+    if (insertPos == tail_)
+    {
+      tail_ = nodeToMove;
+    }
+  }
+
+  size_++;
 }
 
 template< class T >
@@ -624,28 +660,28 @@ void List< T >::spliceAfter(LIter< T > pos, List< T > &other,
     return;
   }
 
-  if (first.get() == nullptr)
-  {
-    return;
-  }
-
   detail::Node< T > *beforeFirst = first.get();
-  detail::Node< T > *firstNode = beforeFirst->next;
 
-  if (firstNode == nullptr)
+  if (!beforeFirst || !beforeFirst->next)
   {
     return;
   }
 
+  detail::Node< T > *firstNode = beforeFirst->next;
   detail::Node< T > *lastNode = last.get();
-  detail::Node< T > *rangeTail = firstNode;
 
+  detail::Node< T > *rangeTail = firstNode;
   size_t count = 1;
 
   while (rangeTail->next != lastNode)
   {
     rangeTail = rangeTail->next;
     ++count;
+
+    if (!rangeTail)
+    {
+      return;
+    }
   }
 
   beforeFirst->next = lastNode;
