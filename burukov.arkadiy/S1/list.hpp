@@ -621,32 +621,23 @@ void List<T>::spliceAfter(LIter<T> pos, List<T> &other, LIter<T> first, LIter<T>
     return;
   }
 
-  if (first.get() == nullptr || first.get()->next == nullptr)
+  if (first.get() == nullptr)
   {
     return;
   }
 
-  detail::Node<T> *firstNode;
-  if (first == other.begin() && other.head_ != nullptr)
+  detail::Node<T> *beforeFirst = first.get();
+  detail::Node<T> *firstNode = beforeFirst->next;
+
+  if (firstNode == nullptr)
   {
-    if (last == other.end())
-    {
-      firstNode = other.head_;
-    }
-    else
-    {
-      firstNode = other.head_->next;
-    }
-  }
-  else
-  {
-    firstNode = first.get()->next;
+    return;
   }
 
   detail::Node<T> *lastNode = last.get();
+  detail::Node<T> *rangeTail = firstNode;
 
   size_t count = 1;
-  detail::Node<T> *rangeTail = firstNode;
 
   while (rangeTail->next != lastNode)
   {
@@ -654,26 +645,7 @@ void List<T>::spliceAfter(LIter<T> pos, List<T> &other, LIter<T> first, LIter<T>
     ++count;
   }
 
-  detail::Node<T> *beforeFirst;
-  if (first == other.begin())
-  {
-    beforeFirst = nullptr;
-  }
-  else
-  {
-    beforeFirst = first.get();
-  }
-
-  detail::Node<T> *afterLast = (lastNode == nullptr) ? nullptr : lastNode;
-
-  if (beforeFirst)
-  {
-    beforeFirst->next = afterLast;
-  }
-  else
-  {
-    other.head_ = afterLast;
-  }
+  beforeFirst->next = lastNode;
 
   if (rangeTail == other.tail_)
   {
@@ -682,13 +654,21 @@ void List<T>::spliceAfter(LIter<T> pos, List<T> &other, LIter<T> first, LIter<T>
 
   other.size_ -= count;
 
-  detail::Node<T> *insertAfterNode = (pos == end()) ? tail_ : pos.get();
-  detail::Node<T> *nextAfter = insertAfterNode->next;
+  detail::Node<T> *insertPos = (pos == end()) ? tail_ : pos.get();
 
-  insertAfterNode->next = firstNode;
-  rangeTail->next = nextAfter;
+  if (insertPos == nullptr)
+  {
+    head_ = firstNode;
+    tail_ = rangeTail;
+  }
+  else
+  {
+    detail::Node<T> *nextAfter = insertPos->next;
+    insertPos->next = firstNode;
+    rangeTail->next = nextAfter;
+  }
 
-  if (pos == end())
+  if (pos == end() || tail_ == insertPos)
   {
     tail_ = rangeTail;
   }
