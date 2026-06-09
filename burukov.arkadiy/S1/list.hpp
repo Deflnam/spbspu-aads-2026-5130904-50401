@@ -663,7 +663,7 @@ void List< T >::spliceAfter(LIter< T > pos, List< T > &other,
   {
     rangeTail->next = head_;
     head_ = firstNode;
-    
+
     if (tail_ == nullptr)
     {
       tail_ = rangeTail;
@@ -673,7 +673,7 @@ void List< T >::spliceAfter(LIter< T > pos, List< T > &other,
   {
     rangeTail->next = insertPos->next;
     insertPos->next = firstNode;
-    
+
     if (insertPos == tail_)
     {
       tail_ = rangeTail;
