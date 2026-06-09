@@ -621,7 +621,16 @@ void List<T>::spliceAfter(LIter<T> pos, List<T> &other, LIter<T> first, LIter<T>
     return;
   }
 
-  detail::Node<T> *firstNode = first.get()->next;
+  detail::Node<T> *firstNode;
+  if (first == other.begin())
+  {
+    firstNode = other.head_;
+  }
+  else
+  {
+    firstNode = first.get()->next;
+  }
+
   detail::Node<T> *lastNode = last.get();
 
   size_t count = 1;
@@ -633,16 +642,14 @@ void List<T>::spliceAfter(LIter<T> pos, List<T> &other, LIter<T> first, LIter<T>
     ++count;
   }
 
-  detail::Node<T> *beforeFirst = nullptr;
-
-  if (other.head_ != firstNode)
+  detail::Node<T> *beforeFirst;
+  if (first == other.begin())
   {
-    beforeFirst = other.head_;
-
-    while (beforeFirst && beforeFirst->next != firstNode)
-    {
-      beforeFirst = beforeFirst->next;
-    }
+    beforeFirst = nullptr;
+  }
+  else
+  {
+    beforeFirst = first.get();
   }
 
   detail::Node<T> *afterLast = (lastNode == nullptr) ? nullptr : lastNode;
