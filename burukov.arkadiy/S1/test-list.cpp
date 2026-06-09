@@ -533,9 +533,9 @@ BOOST_AUTO_TEST_CASE(SpliceAfterSingleElement)
   auto check = list1.begin();
   BOOST_CHECK_EQUAL(*check, 1);
   ++check;
-  BOOST_CHECK_EQUAL(*check, 2);
-  ++check;
   BOOST_CHECK_EQUAL(*check, 3);
+  ++check;
+  BOOST_CHECK_EQUAL(*check, 4);
 }
 
 BOOST_AUTO_TEST_CASE(SpliceAfterRange)
