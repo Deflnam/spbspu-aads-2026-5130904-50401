@@ -621,6 +621,11 @@ void List<T>::spliceAfter(LIter<T> pos, List<T> &other, LIter<T> first, LIter<T>
     return;
   }
 
+  if (first.get() == nullptr || first.get()->next == nullptr)
+  {
+    return;
+  }
+
   detail::Node<T> *firstNode;
   if (first == other.begin())
   {

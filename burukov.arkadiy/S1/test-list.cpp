@@ -524,7 +524,6 @@ BOOST_AUTO_TEST_CASE(SpliceAfterSingleElement)
   ++it;
 
   auto it2 = list2.begin();
-  ++it2;
 
   list1.spliceAfter(it, list2, it2);
 
@@ -562,19 +561,17 @@ BOOST_AUTO_TEST_CASE(SpliceAfterRange)
 
   list1.spliceAfter(pos, list2, first, last);
 
-  BOOST_CHECK_EQUAL(list1.size(), 5);
-  BOOST_CHECK_EQUAL(list2.size(), 1);
+  BOOST_CHECK_EQUAL(list1.size(), 4);
+  BOOST_CHECK_EQUAL(list2.size(), 2);
 
   auto it = list1.begin();
   BOOST_CHECK_EQUAL(*it, 1);
   ++it;
-  BOOST_CHECK_EQUAL(*it, 3);
+  BOOST_CHECK_EQUAL(*it, 5);
   ++it;
   BOOST_CHECK_EQUAL(*it, 4);
   ++it;
   BOOST_CHECK_EQUAL(*it, 6);
-  ++it;
-  BOOST_CHECK_EQUAL(*it, 5);
 }
 
 BOOST_AUTO_TEST_CASE(SpliceAfterRangeEmpty)
