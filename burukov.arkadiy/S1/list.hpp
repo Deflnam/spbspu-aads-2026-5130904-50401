@@ -27,7 +27,7 @@ struct Node
   Node(T &&value, Node< T > *next = nullptr);
 };
 
-} 
+}
 
 template< class T >
 class LIter
@@ -151,7 +151,7 @@ private:
   detail::Node< T > *getBefore(LIter< T > it) const;
 };
 
-} 
+}
 
 namespace burukov
 {
@@ -866,6 +866,6 @@ detail::Node< T > *List< T >::getBefore(LIter< T > it) const
   return curr;
 }
 
-} 
+}
 
 #endif
