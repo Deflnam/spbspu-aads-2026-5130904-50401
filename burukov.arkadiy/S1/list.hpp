@@ -629,7 +629,14 @@ void List<T>::spliceAfter(LIter<T> pos, List<T> &other, LIter<T> first, LIter<T>
   detail::Node<T> *firstNode;
   if (first == other.begin())
   {
-    firstNode = other.head_;
+    if (last == other.end())
+    {
+      firstNode = other.head_;
+    }
+    else
+    {
+      firstNode = other.head_->next;
+    }
   }
   else
   {
