@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_SUITE(ListTests)
 
 BOOST_AUTO_TEST_CASE(DefaultConstructor)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   BOOST_CHECK(list.empty());
   BOOST_CHECK_EQUAL(list.size(), 0);
@@ -18,13 +18,13 @@ BOOST_AUTO_TEST_CASE(DefaultConstructor)
 
 BOOST_AUTO_TEST_CASE(CopyConstructor)
 {
-  burukov::List< int > first;
+  burukov::List<int> first;
 
   first.pushFront(3);
   first.pushFront(2);
   first.pushFront(1);
 
-  burukov::List< int > second(first);
+  burukov::List<int> second(first);
 
   BOOST_CHECK_EQUAL(second.size(), 3);
   BOOST_CHECK(!second.empty());
@@ -43,8 +43,8 @@ BOOST_AUTO_TEST_CASE(CopyConstructor)
 
 BOOST_AUTO_TEST_CASE(CopyConstructorEmpty)
 {
-  burukov::List< int > first;
-  burukov::List< int > second(first);
+  burukov::List<int> first;
+  burukov::List<int> second(first);
 
   BOOST_CHECK(second.empty());
   BOOST_CHECK_EQUAL(second.size(), 0);
@@ -52,12 +52,12 @@ BOOST_AUTO_TEST_CASE(CopyConstructorEmpty)
 
 BOOST_AUTO_TEST_CASE(MoveConstructor)
 {
-  burukov::List< int > first;
+  burukov::List<int> first;
 
   first.pushFront(2);
   first.pushFront(1);
 
-  burukov::List< int > second(std::move(first));
+  burukov::List<int> second(std::move(first));
 
   BOOST_CHECK(first.empty());
   BOOST_CHECK_EQUAL(first.size(), 0);
@@ -71,8 +71,8 @@ BOOST_AUTO_TEST_CASE(MoveConstructor)
 
 BOOST_AUTO_TEST_CASE(MoveConstructorEmpty)
 {
-  burukov::List< int > first;
-  burukov::List< int > second(std::move(first));
+  burukov::List<int> first;
+  burukov::List<int> second(std::move(first));
 
   BOOST_CHECK(second.empty());
   BOOST_CHECK_EQUAL(second.size(), 0);
@@ -80,8 +80,8 @@ BOOST_AUTO_TEST_CASE(MoveConstructorEmpty)
 
 BOOST_AUTO_TEST_CASE(CopyAssignment)
 {
-  burukov::List< int > first;
-  burukov::List< int > second;
+  burukov::List<int> first;
+  burukov::List<int> second;
 
   first.pushFront(3);
   first.pushFront(2);
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(CopyAssignment)
 
 BOOST_AUTO_TEST_CASE(CopyAssignmentSelf)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(3);
   list.pushFront(2);
@@ -121,8 +121,8 @@ BOOST_AUTO_TEST_CASE(CopyAssignmentSelf)
 
 BOOST_AUTO_TEST_CASE(MoveAssignment)
 {
-  burukov::List< int > first;
-  burukov::List< int > second;
+  burukov::List<int> first;
+  burukov::List<int> second;
 
   first.pushFront(2);
   first.pushFront(1);
@@ -140,12 +140,12 @@ BOOST_AUTO_TEST_CASE(MoveAssignment)
 
 BOOST_AUTO_TEST_CASE(MoveAssignmentSelf)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(2);
   list.pushFront(1);
 
-  burukov::List< int > *ptr = &list;
+  burukov::List<int> *ptr = &list;
   *ptr = std::move(list);
 
   BOOST_CHECK_EQUAL(list.size(), 2);
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(MoveAssignmentSelf)
 
 BOOST_AUTO_TEST_CASE(Front)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(3);
   list.pushFront(2);
@@ -167,29 +167,29 @@ BOOST_AUTO_TEST_CASE(Front)
 
 BOOST_AUTO_TEST_CASE(FrontConst)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(3);
   list.pushFront(2);
   list.pushFront(1);
 
-  const burukov::List< int > &constRef = list;
+  const burukov::List<int> &constRef = list;
 
   BOOST_CHECK_EQUAL(constRef.front(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(FrontEmptyThrows)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   BOOST_CHECK_THROW(list.front(), std::logic_error);
-  BOOST_CHECK_THROW(static_cast<const burukov::List< int > &>(list).front(),
-                    std::logic_error);
+  BOOST_CHECK_THROW(static_cast<const burukov::List<int> &>(list).front(),
+    std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE(PushFront)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(2);
   list.pushFront(1);
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE(PushFront)
 
 BOOST_AUTO_TEST_CASE(PushFrontMove)
 {
-  burukov::List< std::string > list;
+  burukov::List<std::string> list;
 
   std::string s = "hello";
   list.pushFront(std::move(s));
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(PushFrontMove)
 
 BOOST_AUTO_TEST_CASE(PushBack)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushBack(1);
   list.pushBack(2);
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(PushBack)
 
 BOOST_AUTO_TEST_CASE(PopFront)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(3);
   list.pushFront(2);
@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE(PopFront)
 
 BOOST_AUTO_TEST_CASE(PopFrontEmpty)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.popFront();
 
@@ -259,7 +259,7 @@ BOOST_AUTO_TEST_CASE(PopFrontEmpty)
 
 BOOST_AUTO_TEST_CASE(InsertAfter)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(1);
 
@@ -275,7 +275,7 @@ BOOST_AUTO_TEST_CASE(InsertAfter)
 
 BOOST_AUTO_TEST_CASE(InsertAfterMultiple)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(1);
 
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE(InsertAfterMultiple)
 
 BOOST_AUTO_TEST_CASE(InsertAfterEnd)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(1);
 
@@ -311,7 +311,7 @@ BOOST_AUTO_TEST_CASE(InsertAfterEnd)
 
 BOOST_AUTO_TEST_CASE(EraseAfter)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(3);
   list.pushFront(2);
@@ -329,7 +329,7 @@ BOOST_AUTO_TEST_CASE(EraseAfter)
 
 BOOST_AUTO_TEST_CASE(EraseAfterLast)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(2);
   list.pushFront(1);
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE(EraseAfterLast)
 
 BOOST_AUTO_TEST_CASE(EraseAfterEnd)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(1);
 
@@ -357,7 +357,7 @@ BOOST_AUTO_TEST_CASE(EraseAfterEnd)
 
 BOOST_AUTO_TEST_CASE(Clear)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(3);
   list.pushFront(2);
@@ -372,7 +372,7 @@ BOOST_AUTO_TEST_CASE(Clear)
 
 BOOST_AUTO_TEST_CASE(ClearEmpty)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.clear();
 
@@ -382,8 +382,8 @@ BOOST_AUTO_TEST_CASE(ClearEmpty)
 
 BOOST_AUTO_TEST_CASE(Swap)
 {
-  burukov::List< int > first;
-  burukov::List< int > second;
+  burukov::List<int> first;
+  burukov::List<int> second;
 
   first.pushFront(2);
   first.pushFront(1);
@@ -409,7 +409,7 @@ BOOST_AUTO_TEST_CASE(Swap)
 
 BOOST_AUTO_TEST_CASE(IteratorIncrement)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(3);
   list.pushFront(2);
@@ -432,13 +432,13 @@ BOOST_AUTO_TEST_CASE(IteratorIncrement)
 
 BOOST_AUTO_TEST_CASE(ConstIterator)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(3);
   list.pushFront(2);
   list.pushFront(1);
 
-  const burukov::List< int > &constRef = list;
+  const burukov::List<int> &constRef = list;
 
   auto it = constRef.cbegin();
 
@@ -451,10 +451,10 @@ BOOST_AUTO_TEST_CASE(ConstIterator)
   BOOST_CHECK(it == constRef.cend());
 }
 
-BOOST_AUTO_TEST_CASE(SpliceWholeList)
+BOOST_AUTO_TEST_CASE(SpliceAfterWholeList)
 {
-  burukov::List< int > list1;
-  burukov::List< int > list2;
+  burukov::List<int> list1;
+  burukov::List<int> list2;
 
   list1.pushFront(3);
   list1.pushFront(2);
@@ -464,55 +464,55 @@ BOOST_AUTO_TEST_CASE(SpliceWholeList)
   list2.pushFront(5);
   list2.pushFront(4);
 
-  list1.splice(list1.begin(), list2);
+  list1.spliceAfter(list1.begin(), list2);
 
   BOOST_CHECK_EQUAL(list1.size(), 6);
   BOOST_CHECK(list2.empty());
 
   auto it = list1.begin();
+  BOOST_CHECK_EQUAL(*it, 1);
+  ++it;
   BOOST_CHECK_EQUAL(*it, 4);
   ++it;
   BOOST_CHECK_EQUAL(*it, 5);
   ++it;
   BOOST_CHECK_EQUAL(*it, 6);
   ++it;
-  BOOST_CHECK_EQUAL(*it, 1);
-  ++it;
   BOOST_CHECK_EQUAL(*it, 2);
   ++it;
   BOOST_CHECK_EQUAL(*it, 3);
 }
 
-BOOST_AUTO_TEST_CASE(SpliceWholeListEmpty)
+BOOST_AUTO_TEST_CASE(SpliceAfterWholeListEmpty)
 {
-  burukov::List< int > list1;
-  burukov::List< int > list2;
+  burukov::List<int> list1;
+  burukov::List<int> list2;
 
   list1.pushFront(1);
 
-  list1.splice(list1.begin(), list2);
+  list1.spliceAfter(list1.begin(), list2);
 
   BOOST_CHECK_EQUAL(list1.size(), 1);
   BOOST_CHECK(list2.empty());
 }
 
-BOOST_AUTO_TEST_CASE(SpliceWholeListSelf)
+BOOST_AUTO_TEST_CASE(SpliceAfterWholeListSelf)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(3);
   list.pushFront(2);
   list.pushFront(1);
 
-  list.splice(list.begin(), list);
+  list.spliceAfter(list.begin(), list);
 
   BOOST_CHECK_EQUAL(list.size(), 3);
 }
 
-BOOST_AUTO_TEST_CASE(SpliceSingleElement)
+BOOST_AUTO_TEST_CASE(SpliceAfterSingleElement)
 {
-  burukov::List< int > list1;
-  burukov::List< int > list2;
+  burukov::List<int> list1;
+  burukov::List<int> list2;
 
   list1.pushFront(3);
   list1.pushFront(1);
@@ -526,7 +526,7 @@ BOOST_AUTO_TEST_CASE(SpliceSingleElement)
   auto it2 = list2.begin();
   ++it2;
 
-  list1.splice(it, list2, it2);
+  list1.spliceAfter(it, list2, it2);
 
   BOOST_CHECK_EQUAL(list1.size(), 3);
   BOOST_CHECK_EQUAL(list2.size(), 1);
@@ -534,15 +534,15 @@ BOOST_AUTO_TEST_CASE(SpliceSingleElement)
   auto check = list1.begin();
   BOOST_CHECK_EQUAL(*check, 1);
   ++check;
-  BOOST_CHECK_EQUAL(*check, 4);
+  BOOST_CHECK_EQUAL(*check, 2);
   ++check;
   BOOST_CHECK_EQUAL(*check, 3);
 }
 
-BOOST_AUTO_TEST_CASE(SpliceRange)
+BOOST_AUTO_TEST_CASE(SpliceAfterRange)
 {
-  burukov::List< int > list1;
-  burukov::List< int > list2;
+  burukov::List<int> list1;
+  burukov::List<int> list2;
 
   list1.pushFront(5);
   list1.pushFront(1);
@@ -560,7 +560,7 @@ BOOST_AUTO_TEST_CASE(SpliceRange)
 
   auto last = list2.end();
 
-  list1.splice(pos, list2, first, last);
+  list1.spliceAfter(pos, list2, first, last);
 
   BOOST_CHECK_EQUAL(list1.size(), 5);
   BOOST_CHECK_EQUAL(list2.size(), 1);
@@ -577,17 +577,17 @@ BOOST_AUTO_TEST_CASE(SpliceRange)
   BOOST_CHECK_EQUAL(*it, 5);
 }
 
-BOOST_AUTO_TEST_CASE(SpliceRangeEmpty)
+BOOST_AUTO_TEST_CASE(SpliceAfterRangeEmpty)
 {
-  burukov::List< int > list1;
-  burukov::List< int > list2;
+  burukov::List<int> list1;
+  burukov::List<int> list2;
 
   list1.pushFront(1);
   list2.pushFront(2);
 
   auto it = list2.begin();
 
-  list1.splice(list1.begin(), list2, it, it);
+  list1.spliceAfter(list1.begin(), list2, it, it);
 
   BOOST_CHECK_EQUAL(list1.size(), 1);
   BOOST_CHECK_EQUAL(list2.size(), 1);
@@ -595,7 +595,7 @@ BOOST_AUTO_TEST_CASE(SpliceRangeEmpty)
 
 BOOST_AUTO_TEST_CASE(Sort)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(5);
   list.pushFront(1);
@@ -620,7 +620,7 @@ BOOST_AUTO_TEST_CASE(Sort)
 
 BOOST_AUTO_TEST_CASE(SortDescending)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(1);
   list.pushFront(2);
@@ -628,7 +628,7 @@ BOOST_AUTO_TEST_CASE(SortDescending)
   list.pushFront(4);
   list.pushFront(5);
 
-  list.sort(std::greater< int >());
+  list.sort(std::greater<int>());
 
   auto it = list.begin();
 
@@ -645,7 +645,7 @@ BOOST_AUTO_TEST_CASE(SortDescending)
 
 BOOST_AUTO_TEST_CASE(SortEmpty)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.sort();
 
@@ -654,7 +654,7 @@ BOOST_AUTO_TEST_CASE(SortEmpty)
 
 BOOST_AUTO_TEST_CASE(SortSingleElement)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(42);
   list.sort();
@@ -665,8 +665,8 @@ BOOST_AUTO_TEST_CASE(SortSingleElement)
 
 BOOST_AUTO_TEST_CASE(Merge)
 {
-  burukov::List< int > first;
-  burukov::List< int > second;
+  burukov::List<int> first;
+  burukov::List<int> second;
 
   first.pushFront(3);
   first.pushFront(1);
@@ -692,8 +692,8 @@ BOOST_AUTO_TEST_CASE(Merge)
 
 BOOST_AUTO_TEST_CASE(MergeWithComparator)
 {
-  burukov::List< int > first;
-  burukov::List< int > second;
+  burukov::List<int> first;
+  burukov::List<int> second;
 
   first.pushFront(1);
   first.pushFront(3);
@@ -701,7 +701,7 @@ BOOST_AUTO_TEST_CASE(MergeWithComparator)
   second.pushFront(2);
   second.pushFront(4);
 
-  first.merge(second, std::greater< int >());
+  first.merge(second, std::greater<int>());
 
   auto it = first.begin();
 
@@ -716,8 +716,8 @@ BOOST_AUTO_TEST_CASE(MergeWithComparator)
 
 BOOST_AUTO_TEST_CASE(MergeEmpty)
 {
-  burukov::List< int > first;
-  burukov::List< int > second;
+  burukov::List<int> first;
+  burukov::List<int> second;
 
   first.pushFront(1);
 
@@ -729,7 +729,7 @@ BOOST_AUTO_TEST_CASE(MergeEmpty)
 
 BOOST_AUTO_TEST_CASE(MergeSelf)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(3);
   list.pushFront(2);
@@ -742,7 +742,7 @@ BOOST_AUTO_TEST_CASE(MergeSelf)
 
 BOOST_AUTO_TEST_CASE(Partition)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(5);
   list.pushFront(2);
@@ -750,10 +750,11 @@ BOOST_AUTO_TEST_CASE(Partition)
   list.pushFront(1);
   list.pushFront(3);
 
-  list.partition([](int value)
-  {
-    return value % 2 == 0;
-  });
+  list.partition(
+    [](int value)
+    {
+      return value % 2 == 0;
+    });
 
   bool oddFound = false;
 
@@ -773,12 +774,13 @@ BOOST_AUTO_TEST_CASE(Partition)
 
 BOOST_AUTO_TEST_CASE(PartitionEmpty)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
-  auto result = list.partition([](int value)
-  {
-    return value > 0;
-  });
+  auto result = list.partition(
+    [](int value)
+    {
+      return value > 0;
+    });
 
   BOOST_CHECK(result == list.end());
   BOOST_CHECK(list.empty());
@@ -786,16 +788,17 @@ BOOST_AUTO_TEST_CASE(PartitionEmpty)
 
 BOOST_AUTO_TEST_CASE(PartitionAllTrue)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(5);
   list.pushFront(3);
   list.pushFront(1);
 
-  auto result = list.partition([](int value)
-  {
-    return value % 2 == 1;
-  });
+  auto result = list.partition(
+    [](int value)
+    {
+      return value % 2 == 1;
+    });
 
   BOOST_CHECK(result == list.begin());
 
@@ -809,16 +812,17 @@ BOOST_AUTO_TEST_CASE(PartitionAllTrue)
 
 BOOST_AUTO_TEST_CASE(PartitionAllFalse)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(4);
   list.pushFront(2);
   list.pushFront(6);
 
-  auto result = list.partition([](int value)
-  {
-    return value % 2 == 1;
-  });
+  auto result = list.partition(
+    [](int value)
+    {
+      return value % 2 == 1;
+    });
 
   BOOST_CHECK(result == list.begin());
 
@@ -832,7 +836,7 @@ BOOST_AUTO_TEST_CASE(PartitionAllFalse)
 
 BOOST_AUTO_TEST_CASE(StressTest)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   for (int i = 100; i > 0; --i)
   {
@@ -852,7 +856,7 @@ BOOST_AUTO_TEST_CASE(StressTest)
 
 BOOST_AUTO_TEST_CASE(MultipleOperations)
 {
-  burukov::List< int > list;
+  burukov::List<int> list;
 
   list.pushFront(10);
   list.pushFront(20);
@@ -875,8 +879,8 @@ BOOST_AUTO_TEST_CASE(MultipleOperations)
 
 BOOST_AUTO_TEST_CASE(ChainOperations)
 {
-  burukov::List< int > list1;
-  burukov::List< int > list2;
+  burukov::List<int> list1;
+  burukov::List<int> list2;
 
   for (int i = 1; i <= 10; ++i)
   {
