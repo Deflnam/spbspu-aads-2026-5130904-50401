@@ -598,30 +598,23 @@ void List< T >::spliceAfter(LIter< T > pos, List< T > &other,
     return;
   }
 
-  detail::Node< T > *firstNode = first.get();
-  detail::Node< T > *lastNode = last.get();
+  if (first.get() == nullptr || first.get()->next == nullptr)
+  {
+    return;
+  }
+
+  detail::Node< T > *beforeFirst = first.get();
+  detail::Node< T > *firstNode = beforeFirst->next;
 
   if (firstNode == nullptr)
   {
     return;
   }
 
-  detail::Node< T > *beforeFirst = nullptr;
+  detail::Node< T > *lastNode = last.get();
   detail::Node< T > *rangeTail = firstNode;
-  size_t count = 1;
 
-  if (firstNode != other.head_)
-  {
-    beforeFirst = other.head_;
-    while (beforeFirst && beforeFirst->next != firstNode)
-    {
-      beforeFirst = beforeFirst->next;
-    }
-    if (beforeFirst == nullptr)
-    {
-      return;
-    }
-  }
+  size_t count = 1;
 
   while (rangeTail->next != lastNode)
   {
@@ -629,14 +622,7 @@ void List< T >::spliceAfter(LIter< T > pos, List< T > &other,
     ++count;
   }
 
-  if (beforeFirst)
-  {
-    beforeFirst->next = lastNode;
-  }
-  else
-  {
-    other.head_ = lastNode;
-  }
+  beforeFirst->next = lastNode;
 
   if (rangeTail == other.tail_)
   {
