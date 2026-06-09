@@ -573,7 +573,33 @@ void List< T >::spliceAfter(LIter< T > pos, List< T > &other) noexcept
     return;
   }
 
-  spliceAfter(pos, other, other.begin(), other.end());
+  detail::Node< T > *insertPos = (pos == end()) ? tail_ : pos.get();
+
+  if (insertPos == nullptr)
+  {
+    tail_ = other.tail_;
+  }
+  else
+  {
+    other.tail_->next = insertPos->next;
+    insertPos->next = other.head_;
+  }
+
+  if (pos == end() && tail_ == nullptr)
+  {
+    head_ = other.head_;
+    tail_ = other.tail_;
+  }
+  else if (insertPos == tail_)
+  {
+    tail_ = other.tail_;
+  }
+
+  size_ += other.size_;
+
+  other.head_ = nullptr;
+  other.tail_ = nullptr;
+  other.size_ = 0;
 }
 
 template< class T >
@@ -598,7 +624,7 @@ void List< T >::spliceAfter(LIter< T > pos, List< T > &other,
     return;
   }
 
-  if (first.get() == nullptr || first.get()->next == nullptr)
+  if (first.get() == nullptr)
   {
     return;
   }
@@ -635,19 +661,23 @@ void List< T >::spliceAfter(LIter< T > pos, List< T > &other,
 
   if (insertPos == nullptr)
   {
+    rangeTail->next = head_;
     head_ = firstNode;
-    tail_ = rangeTail;
+    
+    if (tail_ == nullptr)
+    {
+      tail_ = rangeTail;
+    }
   }
   else
   {
-    detail::Node< T > *nextAfter = insertPos->next;
+    rangeTail->next = insertPos->next;
     insertPos->next = firstNode;
-    rangeTail->next = nextAfter;
-  }
-
-  if (pos == end() || tail_ == insertPos)
-  {
-    tail_ = rangeTail;
+    
+    if (insertPos == tail_)
+    {
+      tail_ = rangeTail;
+    }
   }
 
   size_ += count;
