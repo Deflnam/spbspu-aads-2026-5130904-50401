@@ -621,7 +621,7 @@ void List<T>::spliceAfter(LIter<T> pos, List<T> &other, LIter<T> first, LIter<T>
     return;
   }
 
-  detail::Node<T> *firstNode = first.get();
+  detail::Node<T> *firstNode = first.get()->next;
   detail::Node<T> *lastNode = last.get();
 
   size_t count = 1;
