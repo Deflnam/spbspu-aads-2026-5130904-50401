@@ -228,7 +228,7 @@ bool processColumns(std::ostream &out, std::ostream &err,
   return false;
 }
 
-}
+} 
 
 int main()
 {

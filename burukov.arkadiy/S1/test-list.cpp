@@ -498,6 +498,7 @@ BOOST_AUTO_TEST_CASE(Sort)
   list.pushFront(4);
   list.pushFront(2);
   list.sort();
+
   auto it = list.begin();
   BOOST_CHECK_EQUAL(*it, 1);
   ++it;
@@ -519,6 +520,7 @@ BOOST_AUTO_TEST_CASE(SortDescending)
   list.pushFront(4);
   list.pushFront(5);
   list.sort(std::greater<int>());
+
   auto it = list.begin();
   BOOST_CHECK_EQUAL(*it, 5);
   ++it;
