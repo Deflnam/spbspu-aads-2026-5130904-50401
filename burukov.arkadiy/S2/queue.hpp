@@ -10,12 +10,10 @@ namespace burukov
   {
   public:
     Queue() = default;
-
-    Queue(const Queue &other);
-    Queue(Queue &&other) noexcept;
-
-    Queue &operator=(const Queue &other);
-    Queue &operator=(Queue &&other) noexcept;
+    Queue(const Queue &other) = default;
+    Queue(Queue &&other) noexcept = default;
+    Queue &operator=(const Queue &other) = default;
+    Queue &operator=(Queue &&other) noexcept = default;
 
     T &front();
     const T &front() const;
@@ -27,49 +25,15 @@ namespace burukov
     void push(T &&value);
 
     template< class... Args >
-    void emplace(Args &&...args);
+    void emplace(Args &&... args);
 
     void pop() noexcept;
 
     void swap(Queue &other) noexcept;
 
-    void clear() noexcept;
-
   private:
     List< T > list_;
   };
-}
-
-template< class T >
-burukov::Queue< T >::Queue(const Queue &other)
-  : list_(other.list_)
-{}
-
-template< class T >
-burukov::Queue< T >::Queue(Queue &&other) noexcept
-  : list_(std::move(other.list_))
-{}
-
-template< class T >
-burukov::Queue< T > &burukov::Queue< T >::operator=(const Queue &other)
-{
-  if (this != &other)
-  {
-    Queue temp(other);
-    swap(temp);
-  }
-  return *this;
-}
-
-template< class T >
-burukov::Queue< T > &burukov::Queue< T >::operator=(Queue &&other) noexcept
-{
-  if (this != &other)
-  {
-    Queue temp(std::move(other));
-    swap(temp);
-  }
-  return *this;
 }
 
 template< class T >
@@ -87,7 +51,7 @@ const T &burukov::Queue< T >::front() const
 template< class T >
 bool burukov::Queue< T >::empty() const noexcept
 {
-  return list_.size() == 0;
+  return list_.empty();
 }
 
 template< class T >
@@ -105,12 +69,12 @@ void burukov::Queue< T >::push(const T &value)
 template< class T >
 void burukov::Queue< T >::push(T &&value)
 {
-  list_.pushBack(std::move(value));
+  list_.pushBack(std::forward< T >(value));
 }
 
 template< class T >
 template< class... Args >
-void burukov::Queue< T >::emplace(Args &&...args)
+void burukov::Queue< T >::emplace(Args &&... args)
 {
   list_.emplaceBack(std::forward< Args >(args)...);
 }
@@ -125,12 +89,6 @@ template< class T >
 void burukov::Queue< T >::swap(Queue &other) noexcept
 {
   list_.swap(other.list_);
-}
-
-template< class T >
-void burukov::Queue< T >::clear() noexcept
-{
-  list_.clear();
 }
 
 #endif
