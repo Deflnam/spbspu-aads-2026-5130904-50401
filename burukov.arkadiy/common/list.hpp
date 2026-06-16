@@ -116,13 +116,13 @@ namespace burukov
     LIter< T > eraseAfter(LIter< T > pos) noexcept;
 
     template< class... Args >
-    void emplaceFront(Args &&...args);
+    void emplaceFront(Args &&... args);
 
     template< class... Args >
-    void emplaceBack(Args &&...args);
+    void emplaceBack(Args &&... args);
 
     template< class... Args >
-    LIter< T > emplaceAfter(LIter< T > pos, Args &&...args);
+    LIter< T > emplaceAfter(LIter< T > pos, Args &&... args);
 
     void clear() noexcept;
     void swap(List< T > &other) noexcept;
@@ -442,7 +442,7 @@ namespace burukov
 
   template< class T >
   template< class... Args >
-  void List< T >::emplaceFront(Args &&...args)
+  void List< T >::emplaceFront(Args &&... args)
   {
     T value(std::forward< Args >(args)...);
     detail::Node< T > *node = new detail::Node< T >(std::forward< T >(value), head_);
@@ -456,7 +456,7 @@ namespace burukov
 
   template< class T >
   template< class... Args >
-  void List< T >::emplaceBack(Args &&...args)
+  void List< T >::emplaceBack(Args &&... args)
   {
     if (empty())
     {
@@ -470,7 +470,7 @@ namespace burukov
 
   template< class T >
   template< class... Args >
-  LIter< T > List< T >::emplaceAfter(LIter< T > pos, Args &&...args)
+  LIter< T > List< T >::emplaceAfter(LIter< T > pos, Args &&... args)
   {
     if (pos == end())
     {
