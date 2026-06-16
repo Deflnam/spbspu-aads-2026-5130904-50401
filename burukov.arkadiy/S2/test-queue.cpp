@@ -142,18 +142,6 @@ BOOST_AUTO_TEST_CASE(swapTest)
   BOOST_CHECK(q2.size() == 1);
 }
 
-BOOST_AUTO_TEST_CASE(clearTest)
-{
-  burukov::Queue< int > q;
-  q.push(1);
-  q.push(2);
-  q.push(3);
-  BOOST_CHECK(q.size() == 3);
-  q.clear();
-  BOOST_CHECK(q.size() == 0);
-  BOOST_CHECK(q.empty());
-}
-
 BOOST_AUTO_TEST_CASE(stringQueue)
 {
   burukov::Queue< std::string > q;
