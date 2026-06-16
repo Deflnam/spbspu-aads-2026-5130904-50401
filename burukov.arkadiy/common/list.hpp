@@ -363,7 +363,7 @@ namespace burukov
   {
     if (this != std::addressof(other))
     {
-      List< T > temp(std::move(other));
+      List< T > temp(std::forward< T >(other));
       swap(temp);
     }
 
@@ -673,8 +673,7 @@ namespace burukov
   }
 
   template< class T >
-  void List< T >::spliceAfter(LIter< T > pos, List< T > &other,
-      LIter< T > first, LIter< T > last) noexcept
+  void List< T >::spliceAfter(LIter< T > pos, List< T > &other, LIter< T > first, LIter< T > last) noexcept
   {
     if (first == last || other.empty())
     {
