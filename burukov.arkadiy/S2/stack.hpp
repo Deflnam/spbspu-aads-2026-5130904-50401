@@ -67,7 +67,7 @@ void burukov::Stack< T >::push(const T &value)
 template< class T >
 void burukov::Stack< T >::push(T &&value)
 {
-  list_.pushFront(std::move(value));
+  list_.pushFront(std::forward< T >(value));
 }
 
 template< class T >
