@@ -1,263 +1,237 @@
-#include "list.hpp"
-
+#include <algorithm>
 #include <iostream>
-#include <string>
 #include <limits>
+#include <sstream>
+#include <string>
 #include <utility>
 
-namespace burukov
+#include "list.hpp"
+
+namespace
 {
-  using pair_t = std::pair<std::string,List< unsigned long long >>;
 
-  template< class Container >
-  void printContainer(
-      std::ostream &out,
-      const Container &container)
+using pair_t = std::pair< std::string, burukov::List< unsigned long long > >;
+using iter_list_t = burukov::List< burukov::LCIter< unsigned long long > >;
+
+template< class Container >
+void printContainer(std::ostream &out, const Container &container)
+{
+  auto it = container.cbegin();
+
+  if (it != container.cend())
   {
-    auto it = container.cbegin();
-
-    if (it != container.cend())
-    {
-      out << *it;
-      ++it;
-    }
+    out << *it;
+    ++it;
 
     for (; it != container.cend(); ++it)
     {
       out << " " << *it;
     }
   }
+}
 
-  void printNames(
-      std::ostream &out,
-      const List< pair_t > &seqs)
+void printNames(std::ostream &out, const burukov::List<pair_t> &seqs)
+{
+  auto it = seqs.cbegin();
+
+  if (it != seqs.cend())
   {
-    auto it = seqs.cbegin();
-
-    if (it != seqs.cend())
-    {
-      out << it->first;
-      ++it;
-    }
+    out << it->first;
+    ++it;
 
     for (; it != seqs.cend(); ++it)
     {
       out << " " << it->first;
     }
   }
+}
 
-  void readSequences(
-      std::istream &in,
-      List< pair_t > &seqs)
+void readSequences(std::istream &in, burukov::List< pair_t > &seqs)
+{
+  std::string line;
+  bool hasTail = false;
+  burukov::LIter< pair_t > seqTail;
+
+  while (std::getline(in, line))
   {
+    if (line.empty())
+    {
+      continue;
+    }
+
+    std::istringstream iss(line);
     std::string name;
 
-    LIter< pair_t > seqTail;
-    bool hasTail = false;
-
-    while (in >> name)
+    if (!(iss >> name))
     {
-      List< unsigned long long > numbers;
+      continue;
+    }
 
-      unsigned long long value = 0;
+    burukov::List< unsigned long long > numbers;
+    unsigned long long value = 0;
+    bool numHasTail = false;
+    burukov::LIter< unsigned long long > numTail;
 
-      LIter< unsigned long long > numTail;
-      bool numHasTail = false;
-
-      while (in >> value)
+    while (iss >> value)
+    {
+      if (!numHasTail)
       {
-        if (!numHasTail)
-        {
-          numbers.pushFront(value);
-          numTail = numbers.begin();
-          numHasTail = true;
-        }
-        else
-        {
-          numTail = numbers.insertAfter(
-              numTail,
-              value);
-        }
-      }
-
-      in.clear();
-
-      pair_t pair;
-      pair.first = name;
-      pair.second = std::move(numbers);
-
-      if (!hasTail)
-      {
-        seqs.pushFront(std::move(pair));
-        seqTail = seqs.begin();
-        hasTail = true;
+        numbers.pushFront(value);
+        numTail = numbers.begin();
+        numHasTail = true;
       }
       else
       {
-        seqTail = seqs.insertAfter(
-            seqTail,
-            std::move(pair));
+        numTail = numbers.insertAfter(numTail, value);
       }
+    }
+
+    pair_t p;
+    p.first = name;
+    p.second = std::move(numbers);
+
+    if (!hasTail)
+    {
+      seqs.pushFront(std::move(p));
+      seqTail = seqs.begin();
+      hasTail = true;
+    }
+    else
+    {
+      seqTail = seqs.insertAfter(seqTail, std::move(p));
     }
   }
+}
 
-  size_t getMaxLen(const List< pair_t > &seqs)
+size_t getMaxLen(const burukov::List< pair_t > &seqs)
+{
+  size_t result = 0;
+
+  for (auto it = seqs.cbegin(); it != seqs.cend(); ++it)
   {
-    size_t result = 0;
-
-    for (auto it = seqs.cbegin();
-        it != seqs.cend();
-        ++it)
-    {
-      if (it->second.size() > result)
-      {
-        result = it->second.size();
-      }
-    }
-
-    return result;
+    result = std::max(result, it->second.size());
   }
 
-  int process(
-      std::ostream &out,std::ostream &err,List< pair_t > &seqs)
+  return result;
+}
+
+void buildIterators(const burukov::List< pair_t > &seqs, iter_list_t &iters)
+{
+  bool hasIterTail = false;
+  burukov::LIter< burukov::LCIter< unsigned long long > > iterTail;
+
+  for (auto seqIt = seqs.cbegin(); seqIt != seqs.cend(); ++seqIt)
   {
-    size_t maxLen = getMaxLen(seqs);
-
-    if (maxLen == 0)
+    if (!hasIterTail)
     {
-      out << "0\n";
-      return 0;
+      iters.pushFront(seqIt->second.cbegin());
+      iterTail = iters.begin();
+      hasIterTail = true;
     }
-
-    List< LIter< unsigned long long > > iters;
-
+    else
     {
-      bool first = true;
-      LIter< LIter< unsigned long long > > tail;
-
-      for (auto it = seqs.begin();
-          it != seqs.end();
-          ++it)
-      {
-        if (first)
-        {
-          iters.pushFront(it->second.begin());
-          tail = iters.begin();
-          first = false;
-        }
-        else
-        {
-          tail = iters.insertAfter(
-              tail,
-              it->second.begin());
-        }
-      }
+      iterTail = iters.insertAfter(iterTail, seqIt->second.cbegin());
     }
+  }
+}
 
-    List< unsigned long long > sums;
+void printColumnRow(std::ostream &out, const burukov::List< pair_t > &seqs, iter_list_t &iters, size_t column,
+    unsigned long long &currentSum, bool &overflow)
+{
+  burukov::List< unsigned long long > row;
+  bool rowTailSet = false;
+  burukov::LIter< unsigned long long > rowTail;
+  const unsigned long long maxValue = std::numeric_limits< unsigned long long >::max();
 
-    bool sumTailSet = false;
-    LIter< unsigned long long > sumTail;
+  auto iterIt = iters.begin();
 
-    bool overflow = false;
-
-    const unsigned long long maxValue =
-        std::numeric_limits<
-            unsigned long long
-        >::max();
-
-    for (size_t column = 0;
-        column < maxLen;
-        ++column)
+  for (auto seqIt = seqs.cbegin(); seqIt != seqs.cend(); ++seqIt, ++iterIt)
+  {
+    if (column < seqIt->second.size())
     {
-      List< unsigned long long > row;
+      unsigned long long value = **iterIt;
 
-      bool rowTailSet = false;
-      LIter< unsigned long long > rowTail;
-
-      unsigned long long sum = 0;
-
-      auto iterIt = iters.begin();
-
-      for (auto seqIt = seqs.begin();
-          seqIt != seqs.end();
-          ++seqIt, ++iterIt)
+      if (!rowTailSet)
       {
-        if (column >= seqIt->second.size())
-        {
-          continue;
-        }
-
-        unsigned long long value = *(*iterIt);
-
-        if (!rowTailSet)
-        {
-          row.pushFront(value);
-          rowTail = row.begin();
-          rowTailSet = true;
-        }
-        else
-        {
-          rowTail = row.insertAfter(
-              rowTail,
-              value);
-        }
-
-        if (!overflow)
-        {
-          if (sum > maxValue - value)
-          {
-            overflow = true;
-          }
-          else
-          {
-            sum += value;
-          }
-        }
-
-        ++(*iterIt);
+        row.pushFront(value);
+        rowTail = row.begin();
+        rowTailSet = true;
       }
-
-      printContainer(out, row);
-      out << "\n";
+      else
+      {
+        rowTail = row.insertAfter(rowTail, value);
+      }
 
       if (!overflow)
       {
-        if (!sumTailSet)
+        if (currentSum > maxValue - value)
         {
-          sums.pushFront(sum);
-          sumTail = sums.begin();
-          sumTailSet = true;
+          overflow = true;
         }
         else
         {
-          sumTail = sums.insertAfter(
-              sumTail,
-              sum);
+          currentSum += value;
         }
       }
-    }
 
-    if (overflow)
-    {
-      err << "overflow\n";
-      return 1;
+      ++(*iterIt);
     }
+  }
 
-    printContainer(out, sums);
+  printContainer(out, row);
+}
+
+bool processColumns(std::ostream &out, std::ostream &err, const burukov::List< pair_t > &seqs, size_t maxLen,
+    burukov::List< unsigned long long > &sums)
+{
+  if (maxLen == 0)
+  {
+    return false;
+  }
+
+  bool overflow = false;
+  bool sumTailSet = false;
+  burukov::LIter< unsigned long long > sumTail;
+
+  iter_list_t iters;
+  buildIterators(seqs, iters);
+
+  for (size_t column = 0; column < maxLen; ++column)
+  {
+    unsigned long long currentSum = 0;
+    printColumnRow(out, seqs, iters, column, currentSum, overflow);
     out << "\n";
 
-    return 0;
+    if (!overflow)
+    {
+      if (!sumTailSet)
+      {
+        sums.pushFront(currentSum);
+        sumTail = sums.begin();
+        sumTailSet = true;
+      }
+      else
+      {
+        sumTail = sums.insertAfter(sumTail, currentSum);
+      }
+    }
   }
+
+  if (overflow)
+  {
+    err << "overflow\n";
+    return true;
+  }
+
+  return false;
+}
+
 }
 
 int main()
 {
-  burukov::List< burukov::pair_t > sequences;
-
-  burukov::readSequences(
-      std::cin,
-      sequences);
+  burukov::List< pair_t > sequences;
+  readSequences(std::cin, sequences);
 
   if (sequences.empty())
   {
@@ -265,14 +239,26 @@ int main()
     return 0;
   }
 
-  burukov::printNames(
-      std::cout,
-      sequences);
-
+  printNames(std::cout, sequences);
   std::cout << "\n";
 
-  return burukov::process(
-      std::cout,
-      std::cerr,
-      sequences);
+  size_t maxLen = getMaxLen(sequences);
+
+  if (maxLen == 0)
+  {
+    std::cout << "0\n";
+    return 0;
+  }
+
+  burukov::List< unsigned long long > sums;
+
+  if (processColumns(std::cout, std::cerr, sequences, maxLen, sums))
+  {
+    return 1;
+  }
+
+  printContainer(std::cout, sums);
+  std::cout << "\n";
+
+  return 0;
 }
