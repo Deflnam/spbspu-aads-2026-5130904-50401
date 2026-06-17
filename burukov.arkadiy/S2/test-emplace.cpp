@@ -10,8 +10,8 @@ struct TestStruct
   double b_;
   std::string c_;
 
-  TestStruct(int a, double b, const std::string &c): 
-    a_(a), 
+  TestStruct(int a, double b, const std::string &c):
+    a_(a),
     b_(b),
     c_(c)
   {}
