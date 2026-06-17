@@ -115,6 +115,15 @@ namespace burukov
     LIter< T > insertAfter(LIter< T > pos, T &&value);
     LIter< T > eraseAfter(LIter< T > pos) noexcept;
 
+    template< class... Args >
+    void emplaceFront(Args &&... args);
+
+    template< class... Args >
+    void emplaceBack(Args &&... args);
+
+    template< class... Args >
+    LIter< T > emplaceAfter(LIter< T > pos, Args &&... args);
+
     void clear() noexcept;
     void swap(List< T > &other) noexcept;
 
@@ -147,11 +156,6 @@ namespace burukov
     detail::Node< T > *sortList(detail::Node< T > *head, Compare comp);
     detail::Node< T > *getBefore(LIter< T > it) const;
   };
-
-}
-
-namespace burukov
-{
 
   namespace detail
   {
@@ -437,27 +441,74 @@ namespace burukov
   }
 
   template< class T >
+  template< class... Args >
+  void List< T >::emplaceFront(Args &&... args)
+  {
+    T value(std::forward< Args >(args)...);
+    detail::Node< T > *node = new detail::Node< T >(std::forward< T >(value), head_);
+    head_ = node;
+    if (!tail_)
+    {
+      tail_ = head_;
+    }
+    ++size_;
+  }
+
+  template< class T >
+  template< class... Args >
+  void List< T >::emplaceBack(Args &&... args)
+  {
+    if (empty())
+    {
+      emplaceFront(std::forward< Args >(args)...);
+    }
+    else
+    {
+      emplaceAfter(LIter< T >(tail_), std::forward< Args >(args)...);
+    }
+  }
+
+  template< class T >
+  template< class... Args >
+  LIter< T > List< T >::emplaceAfter(LIter< T > pos, Args &&... args)
+  {
+    if (pos == end())
+    {
+      return end();
+    }
+    T value(std::forward< Args >(args)...);
+    detail::Node< T > *node = new detail::Node< T >(std::forward< T >(value), pos.get()->next);
+    pos.get()->next = node;
+    if (tail_ == pos.get())
+    {
+      tail_ = node;
+    }
+    ++size_;
+    return LIter< T >(node);
+  }
+
+  template< class T >
   void List< T >::pushFront(const T &value)
   {
-    insertNode(nullptr, new detail::Node< T >(value));
+    emplaceFront(value);
   }
 
   template< class T >
   void List< T >::pushFront(T &&value)
   {
-    insertNode(nullptr, new detail::Node< T >(std::forward< T >(value)));
+    emplaceFront(std::forward< T >(value));
   }
 
   template< class T >
   void List< T >::pushBack(const T &value)
   {
-    insertNode(tail_, new detail::Node< T >(value));
+    emplaceBack(value);
   }
 
   template< class T >
   void List< T >::pushBack(T &&value)
   {
-    insertNode(tail_, new detail::Node< T >(std::forward< T >(value)));
+    emplaceBack(std::forward< T >(value));
   }
 
   template< class T >
@@ -482,29 +533,13 @@ namespace burukov
   template< class T >
   LIter< T > List< T >::insertAfter(LIter< T > pos, const T &value)
   {
-    if (pos == end())
-    {
-      return end();
-    }
-
-    detail::Node< T > *created = new detail::Node< T >(value);
-    insertNode(pos.get(), created);
-
-    return LIter< T >(created);
+    return emplaceAfter(pos, value);
   }
 
   template< class T >
   LIter< T > List< T >::insertAfter(LIter< T > pos, T &&value)
   {
-    if (pos == end())
-    {
-      return end();
-    }
-
-    detail::Node< T > *created = new detail::Node< T >(std::forward< T >(value));
-    insertNode(pos.get(), created);
-
-    return LIter< T >(created);
+    return emplaceAfter(pos, std::forward< T >(value));
   }
 
   template< class T >
