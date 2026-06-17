@@ -30,7 +30,7 @@ void printContainer(std::ostream &out, const Container &container)
   }
 }
 
-void printNames(std::ostream &out, const burukov::List<pair_t> &seqs)
+void printNames(std::ostream &out, const burukov::List< pair_t > &seqs)
 {
   auto it = seqs.cbegin();
 
@@ -136,7 +136,7 @@ void buildIterators(const burukov::List< pair_t > &seqs, iter_list_t &iters)
 }
 
 void printColumnRow(std::ostream &out, const burukov::List< pair_t > &seqs, iter_list_t &iters, size_t column,
-    unsigned long long &currentSum, bool &overflow)
+  unsigned long long &currentSum, bool &overflow)
 {
   burukov::List< unsigned long long > row;
   bool rowTailSet = false;
@@ -182,7 +182,7 @@ void printColumnRow(std::ostream &out, const burukov::List< pair_t > &seqs, iter
 }
 
 bool processColumns(std::ostream &out, std::ostream &err, const burukov::List< pair_t > &seqs, size_t maxLen,
-    burukov::List< unsigned long long > &sums)
+  burukov::List< unsigned long long > &sums)
 {
   if (maxLen == 0)
   {
