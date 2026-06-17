@@ -363,7 +363,7 @@ namespace burukov
   {
     if (this != std::addressof(other))
     {
-      List< T > temp(std::forward< T >(other));
+      List< T > temp(std::move(other));
       swap(temp);
     }
 

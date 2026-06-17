@@ -158,7 +158,7 @@ int burukov::detail::getPriority(const std::string &sym)
 }
 
 void burukov::detail::convertToPostfix(const burukov::Queue< std::string > &infix,
-    burukov::Queue< std::string > &postfix)
+  burukov::Queue< std::string > &postfix)
 {
   burukov::Queue< std::string > infixCopy = infix;
   burukov::Stack< std::string > ops;
@@ -191,8 +191,7 @@ void burukov::detail::convertToPostfix(const burukov::Queue< std::string > &infi
     }
     else
     {
-      while (!ops.empty() && ops.top() != "("
-          && getPriority(ops.top()) >= getPriority(sym))
+      while (!ops.empty() && ops.top() != "(" && getPriority(ops.top()) >= getPriority(sym))
       {
         postfix.push(ops.top());
         ops.pop();
@@ -212,7 +211,7 @@ void burukov::detail::convertToPostfix(const burukov::Queue< std::string > &infi
 }
 
 burukov::lli_t burukov::detail::applyOperation(const std::string &sym,
-    burukov::lli_t lhs, burukov::lli_t rhs)
+  burukov::lli_t lhs, burukov::lli_t rhs)
 {
   if (sym == "+")
   {
