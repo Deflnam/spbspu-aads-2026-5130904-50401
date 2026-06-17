@@ -30,7 +30,7 @@ void printContainer(std::ostream &out, const Container &container)
   }
 }
 
-void printNames(std::ostream &out, const burukov::List<pair_t> &seqs)
+void printNames(std::ostream &out, const burukov::List< pair_t > &seqs)
 {
   auto it = seqs.cbegin();
 
