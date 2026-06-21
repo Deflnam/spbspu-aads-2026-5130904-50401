@@ -9,7 +9,6 @@
 namespace burukov
 {
   using lli_t = long long;
-  using func_t = lli_t(*)(lli_t, lli_t);
 
   lli_t add(lli_t lhs, lli_t rhs);
   lli_t sub(lli_t lhs, lli_t rhs);
@@ -25,9 +24,9 @@ namespace burukov
   {
     bool isOperation(const std::string &sym);
     int getPriority(const std::string &sym);
-    void convertToPostfix(const Queue< std::string > &infix,
-                          Queue< std::string > &postfix);
-    std::string calculate(const Queue< std::string > &postfix);
+    void convertToPostfix(const Queue< std::string > &infix, Queue< std::string > &postfix);
+    lli_t applyOperation(const std::string &sym, lli_t lhs, lli_t rhs);
+    lli_t calculate(const Queue< std::string > &postfix);
   }
 }
 

@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 #include <memory>
-#include "list.hpp"
+#include <list.hpp>
 #include "stack.hpp"
 #include "queue.hpp"
 
@@ -10,8 +10,10 @@ struct TestStruct
   double b_;
   std::string c_;
 
-  TestStruct(int a, double b, const std::string &c)
-    : a_(a), b_(b), c_(c)
+  TestStruct(int a, double b, const std::string &c):
+    a_(a),
+    b_(b),
+    c_(c)
   {}
 
   bool operator==(const TestStruct &other) const
@@ -169,8 +171,9 @@ struct NonCopyable
   int value_;
   std::unique_ptr< int > ptr_;
 
-  NonCopyable(int v, int p)
-    : value_(v), ptr_(std::make_unique< int >(p))
+  NonCopyable(int v, int p):
+    value_(v),
+    ptr_(std::make_unique< int >(p))
   {}
 
   NonCopyable(const NonCopyable &) = delete;

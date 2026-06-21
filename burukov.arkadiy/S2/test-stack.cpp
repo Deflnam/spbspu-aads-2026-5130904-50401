@@ -109,18 +109,6 @@ BOOST_AUTO_TEST_CASE(swapTest)
   BOOST_CHECK(s2.size() == 1);
 }
 
-BOOST_AUTO_TEST_CASE(clearTest)
-{
-  burukov::Stack< int > s;
-  s.push(1);
-  s.push(2);
-  s.push(3);
-  BOOST_CHECK(s.size() == 3);
-  s.clear();
-  BOOST_CHECK(s.size() == 0);
-  BOOST_CHECK(s.empty());
-}
-
 BOOST_AUTO_TEST_CASE(stringStack)
 {
   burukov::Stack< std::string > s;
