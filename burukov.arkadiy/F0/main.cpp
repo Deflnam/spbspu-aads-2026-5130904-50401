@@ -6,8 +6,8 @@
 
 int main()
 {
-  using CommandFunc = void (*)(std::istream &, std::ostream &,
-    burukov::LibraryManager &);
+  using CommandFunc = void (*)(std::istream&, std::ostream&,
+    burukov::LibraryManager&);
   burukov::AVLTree< std::string, CommandFunc > commands;
   commands.push("add-title", burukov::parsingAddTitle);
   commands.push("add-copy", burukov::parsingAddCopy);
@@ -22,17 +22,25 @@ int main()
   commands.push("demand-balance", burukov::parsingDemandBalance);
   burukov::LibraryManager lib;
   std::string cmd;
-  while (std::cin >> cmd) {
-    try {
-      if (commands.hasKey(cmd)) {
+  while (std::cin >> cmd)
+  {
+    try
+    {
+      if (commands.hasKey(cmd))
+      {
         commands.at(cmd)(std::cin, std::cout, lib);
-      } else {
+      }
+      else
+      {
         throw std::runtime_error("unknown command");
       }
-    } catch (const std::exception &) {
+    }
+    catch (const std::exception&)
+    {
       std::cout << "<INVALID COMMAND>\n";
       std::cin.clear();
-      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+      std::cin.ignore(
+        std::numeric_limits< std::streamsize >::max(), '\n');
     }
   }
   return 0;
