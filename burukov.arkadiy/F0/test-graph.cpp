@@ -1,5 +1,5 @@
-#include "graph.hpp"
 #include <boost/test/unit_test.hpp>
+#include "graph.hpp"
 
 BOOST_AUTO_TEST_SUITE(GraphTests)
 
@@ -41,8 +41,10 @@ BOOST_AUTO_TEST_CASE(transitiveConnections)
   graph.calculateScores();
   auto recs = graph.getRecommendations("A", 5);
   bool hasC = false;
-  for (auto it = recs.cbegin(); it != recs.cend(); ++it) {
-    if (it->first == "C") {
+  for (auto it = recs.cbegin(); it != recs.cend(); ++it)
+  {
+    if (it->first == "C")
+    {
       hasC = true;
       break;
     }
@@ -66,6 +68,17 @@ BOOST_AUTO_TEST_CASE(emptyGraphReturnsEmpty)
   burukov::RecommendationGraph graph;
   auto recs = graph.getRecommendations("X", 5);
   BOOST_CHECK(recs.empty());
+}
+
+BOOST_AUTO_TEST_CASE(limitKReturnsExactCount)
+{
+  burukov::RecommendationGraph graph;
+  graph.addCoLend("A", "B");
+  graph.addCoLend("A", "C");
+  graph.addCoLend("A", "D");
+  graph.calculateScores();
+  auto recs = graph.getRecommendations("A", 2);
+  BOOST_CHECK_EQUAL(recs.size(), 2);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
