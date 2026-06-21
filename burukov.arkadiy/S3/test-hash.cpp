@@ -8,7 +8,7 @@ BOOST_AUTO_TEST_SUITE(HashTableTest)
 
 BOOST_AUTO_TEST_CASE(add_and_contains)
 {
-  HashTable<int, std::string> table(4);
+  HashTable< int, std::string > table(4);
   table.add(1, "one");
   table.add(2, "two");
   BOOST_CHECK(table.contains(1));
@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(add_and_contains)
 
 BOOST_AUTO_TEST_CASE(update_existing)
 {
-  HashTable<int, int> table(4);
+  HashTable< int, int > table(4);
   table.add(42, 100);
   table.add(42, 200);
   BOOST_CHECK_EQUAL(table.size(), 1);
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(update_existing)
 
 BOOST_AUTO_TEST_CASE(erase_key)
 {
-  HashTable<int, int> table(4);
+  HashTable< int, int > table(4);
   table.add(1, 10);
   table.add(2, 20);
   table.erase(1);
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(erase_key)
 
 BOOST_AUTO_TEST_CASE(rehash_table)
 {
-  HashTable<int, int> table(2);
+  HashTable< int, int > table(2);
   for (int i = 0; i < 10; ++i)
   {
     table.add(i, i);
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(rehash_table)
 
 BOOST_AUTO_TEST_CASE(iteration)
 {
-  HashTable<int, int> table(4);
+  HashTable< int, int > table(4);
   for (int i = 0; i < 10; ++i)
   {
     table.add(i, i);

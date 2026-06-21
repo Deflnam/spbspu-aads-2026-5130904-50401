@@ -2,12 +2,14 @@
 #include <vector.hpp>
 #include <limits>
 #include <algorithm>
+#include <stdexcept>
+#include <string>
 
 namespace burukov
 {
   namespace helpers
   {
-    void sortStrings(Vector<std::string> &strings)
+    void sortStrings(Vector< std::string > &strings)
     {
       for (size_t i = 1; i < strings.getSize(); ++i)
       {
@@ -22,7 +24,7 @@ namespace burukov
       }
     }
 
-    void sortWeights(Vector<size_t> &weights)
+    void sortWeights(Vector< size_t > &weights)
     {
       for (size_t i = 1; i < weights.getSize(); ++i)
       {
@@ -38,276 +40,282 @@ namespace burukov
     }
   }
 
-  void commandGraphs(std::istream &, std::ostream &output_stream, GraphDatabase &database)
+  void commandGraphs(std::istream &, std::ostream &outputStream, GraphDatabase &database)
   {
-    Vector<std::string> names;
+    Vector< std::string > names;
     for (auto it = database.begin(); it != database.end(); ++it)
     {
       names.pushBack(it->first);
     }
     if (names.isEmpty())
     {
-      output_stream << "\n";
+      outputStream << "\n";
       return;
     }
     helpers::sortStrings(names);
     for (size_t i = 0; i < names.getSize(); ++i)
     {
-      output_stream << names[i] << '\n';
+      outputStream << names[i] << '\n';
     }
   }
 
-  void commandVertexes(std::istream &input_stream, std::ostream &output_stream, GraphDatabase &database)
+  void commandVertexes(std::istream &inputStream, std::ostream &outputStream, GraphDatabase &database)
   {
-    std::string graph_name;
-    input_stream >> graph_name;
-    if (!database.contains(graph_name))
+    std::string graphName;
+    inputStream >> graphName;
+    if (!database.contains(graphName))
     {
       throw std::runtime_error("graph not found");
     }
-    const Graph &graph = database.at(graph_name);
-    Vector<std::string> vertices;
+    const Graph &graph = database.at(graphName);
+    Vector< std::string > vertices;
     for (auto it = graph.vertices_.cbegin(); it != graph.vertices_.cend(); ++it)
     {
       vertices.pushBack(*it);
     }
     if (vertices.isEmpty())
     {
-      output_stream << "\n";
+      outputStream << "\n";
       return;
     }
     helpers::sortStrings(vertices);
     for (size_t i = 0; i < vertices.getSize(); ++i)
     {
-      output_stream << vertices[i] << '\n';
+      outputStream << vertices[i] << '\n';
     }
   }
 
-  void commandBind(std::istream &input_stream, std::ostream &, GraphDatabase &database)
+  void commandBind(std::istream &inputStream, std::ostream &, GraphDatabase &database)
   {
-    std::string graph_name, from, to;
+    std::string graphName;
+    std::string from;
+    std::string to;
     size_t weight;
-    input_stream >> graph_name >> from >> to >> weight;
-    if (!database.contains(graph_name))
+    inputStream >> graphName >> from >> to >> weight;
+    if (!database.contains(graphName))
     {
       throw std::runtime_error("graph not found");
     }
-    database.at(graph_name).addEdge(from, to, weight);
+    database.at(graphName).addEdge(from, to, weight);
   }
 
-  void commandCut(std::istream &input_stream, std::ostream &, GraphDatabase &database)
+  void commandCut(std::istream &inputStream, std::ostream &, GraphDatabase &database)
   {
-    std::string graph_name, from, to;
+    std::string graphName;
+    std::string from;
+    std::string to;
     size_t weight;
-    input_stream >> graph_name >> from >> to >> weight;
-    if (!database.contains(graph_name))
+    inputStream >> graphName >> from >> to >> weight;
+    if (!database.contains(graphName))
     {
       throw std::runtime_error("graph not found");
     }
-    database.at(graph_name).removeEdge(from, to, weight);
+    database.at(graphName).removeEdge(from, to, weight);
   }
 
-  void commandCreate(std::istream &input_stream, std::ostream &, GraphDatabase &database)
+  void commandCreate(std::istream &inputStream, std::ostream &, GraphDatabase &database)
   {
-    std::string graph_name;
-    input_stream >> graph_name;
-    if (database.contains(graph_name))
+    std::string graphName;
+    inputStream >> graphName;
+    if (database.contains(graphName))
     {
       throw std::runtime_error("graph already exists");
     }
-    size_t vertex_count;
-    input_stream >> vertex_count;
-    Graph new_graph;
-    for (size_t i = 0; i < vertex_count; ++i)
+    size_t vertexCount;
+    inputStream >> vertexCount;
+    Graph newGraph;
+    for (size_t i = 0; i < vertexCount; ++i)
     {
       std::string vertex;
-      input_stream >> vertex;
-      new_graph.addVertex(vertex);
+      inputStream >> vertex;
+      newGraph.addVertex(vertex);
     }
-    database.add(graph_name, std::move(new_graph));
+    database.add(graphName, std::move(newGraph));
   }
 
-  void commandOutbound(std::istream &input_stream, std::ostream &output_stream, GraphDatabase &database)
+  void commandOutbound(std::istream &inputStream, std::ostream &outputStream, GraphDatabase &database)
   {
-    std::string graph_name, vertex;
-    input_stream >> graph_name >> vertex;
-    if (!database.contains(graph_name))
+    std::string graphName;
+    std::string vertex;
+    inputStream >> graphName >> vertex;
+    if (!database.contains(graphName))
     {
       throw std::runtime_error("graph not found");
     }
-    const Graph &graph = database.at(graph_name);
-    bool vertex_exists = false;
+    const Graph &graph = database.at(graphName);
+    bool vertexExists = false;
     for (auto it = graph.vertices_.cbegin(); it != graph.vertices_.cend(); ++it)
     {
       if (*it == vertex)
       {
-        vertex_exists = true;
+        vertexExists = true;
         break;
       }
     }
-    if (!vertex_exists)
+    if (!vertexExists)
     {
       throw std::runtime_error("vertex not found");
     }
-
     struct OutgoingInfo
     {
       std::string target;
-      Vector<size_t> weights;
+      Vector< size_t > weights;
     };
-    Vector<OutgoingInfo> outgoing_list;
+    Vector< OutgoingInfo > outgoingList;
     for (auto it = graph.edges_.cbegin(); it != graph.edges_.cend(); ++it)
     {
       if (it->first.first == vertex)
       {
-        bool already_exists = false;
-        for (size_t i = 0; i < outgoing_list.getSize(); ++i)
+        bool alreadyExists = false;
+        for (size_t i = 0; i < outgoingList.getSize(); ++i)
         {
-          if (outgoing_list[i].target == it->first.second)
+          if (outgoingList[i].target == it->first.second)
           {
-            for (auto weight_it = it->second.cbegin(); weight_it != it->second.cend(); ++weight_it)
+            for (auto weightIt = it->second.cbegin(); weightIt != it->second.cend(); ++weightIt)
             {
-              outgoing_list[i].weights.pushBack(*weight_it);
+              outgoingList[i].weights.pushBack(*weightIt);
             }
-            already_exists = true;
+            alreadyExists = true;
             break;
           }
         }
-        if (!already_exists)
+        if (!alreadyExists)
         {
           OutgoingInfo info;
           info.target = it->first.second;
-          for (auto weight_it = it->second.cbegin(); weight_it != it->second.cend(); ++weight_it)
+          for (auto weightIt = it->second.cbegin(); weightIt != it->second.cend(); ++weightIt)
           {
-            info.weights.pushBack(*weight_it);
+            info.weights.pushBack(*weightIt);
           }
-          outgoing_list.pushBack(std::move(info));
+          outgoingList.pushBack(std::move(info));
         }
       }
     }
-    if (outgoing_list.isEmpty())
+    if (outgoingList.isEmpty())
     {
-      output_stream << "\n";
+      outputStream << "\n";
       return;
     }
-    Vector<std::string> targets;
-    for (size_t i = 0; i < outgoing_list.getSize(); ++i)
+    Vector< std::string > targets;
+    for (size_t i = 0; i < outgoingList.getSize(); ++i)
     {
-      targets.pushBack(outgoing_list[i].target);
+      targets.pushBack(outgoingList[i].target);
     }
     helpers::sortStrings(targets);
     for (size_t i = 0; i < targets.getSize(); ++i)
     {
-      output_stream << targets[i];
-      for (size_t j = 0; j < outgoing_list.getSize(); ++j)
+      outputStream << targets[i];
+      for (size_t j = 0; j < outgoingList.getSize(); ++j)
       {
-        if (outgoing_list[j].target == targets[i])
+        if (outgoingList[j].target == targets[i])
         {
-          helpers::sortWeights(outgoing_list[j].weights);
-          for (size_t w = 0; w < outgoing_list[j].weights.getSize(); ++w)
+          helpers::sortWeights(outgoingList[j].weights);
+          for (size_t w = 0; w < outgoingList[j].weights.getSize(); ++w)
           {
-            output_stream << ' ' << outgoing_list[j].weights[w];
+            outputStream << ' ' << outgoingList[j].weights[w];
           }
           break;
         }
       }
-      output_stream << '\n';
+      outputStream << '\n';
     }
   }
 
-  void commandInbound(std::istream &input_stream, std::ostream &output_stream, GraphDatabase &database)
+  void commandInbound(std::istream &inputStream, std::ostream &outputStream, GraphDatabase &database)
   {
-    std::string graph_name, vertex;
-    input_stream >> graph_name >> vertex;
-    if (!database.contains(graph_name))
+    std::string graphName;
+    std::string vertex;
+    inputStream >> graphName >> vertex;
+    if (!database.contains(graphName))
     {
       throw std::runtime_error("graph not found");
     }
-    const Graph &graph = database.at(graph_name);
-    bool vertex_exists = false;
+    const Graph &graph = database.at(graphName);
+    bool vertexExists = false;
     for (auto it = graph.vertices_.cbegin(); it != graph.vertices_.cend(); ++it)
     {
       if (*it == vertex)
       {
-        vertex_exists = true;
+        vertexExists = true;
         break;
       }
     }
-    if (!vertex_exists)
+    if (!vertexExists)
     {
       throw std::runtime_error("vertex not found");
     }
-
     struct IncomingInfo
     {
       std::string source;
-      Vector<size_t> weights;
+      Vector< size_t > weights;
     };
-    Vector<IncomingInfo> incoming_list;
+    Vector< IncomingInfo > incomingList;
     for (auto it = graph.edges_.cbegin(); it != graph.edges_.cend(); ++it)
     {
       if (it->first.second == vertex)
       {
-        bool already_exists = false;
-        for (size_t i = 0; i < incoming_list.getSize(); ++i)
+        bool alreadyExists = false;
+        for (size_t i = 0; i < incomingList.getSize(); ++i)
         {
-          if (incoming_list[i].source == it->first.first)
+          if (incomingList[i].source == it->first.first)
           {
-            for (auto weight_it = it->second.cbegin(); weight_it != it->second.cend(); ++weight_it)
+            for (auto weightIt = it->second.cbegin(); weightIt != it->second.cend(); ++weightIt)
             {
-              incoming_list[i].weights.pushBack(*weight_it);
+              incomingList[i].weights.pushBack(*weightIt);
             }
-            already_exists = true;
+            alreadyExists = true;
             break;
           }
         }
-        if (!already_exists)
+        if (!alreadyExists)
         {
           IncomingInfo info;
           info.source = it->first.first;
-          for (auto weight_it = it->second.cbegin(); weight_it != it->second.cend(); ++weight_it)
+          for (auto weightIt = it->second.cbegin(); weightIt != it->second.cend(); ++weightIt)
           {
-            info.weights.pushBack(*weight_it);
+            info.weights.pushBack(*weightIt);
           }
-          incoming_list.pushBack(std::move(info));
+          incomingList.pushBack(std::move(info));
         }
       }
     }
-    if (incoming_list.isEmpty())
+    if (incomingList.isEmpty())
     {
-      output_stream << "\n";
+      outputStream << "\n";
       return;
     }
-    Vector<std::string> sources;
-    for (size_t i = 0; i < incoming_list.getSize(); ++i)
+    Vector< std::string > sources;
+    for (size_t i = 0; i < incomingList.getSize(); ++i)
     {
-      sources.pushBack(incoming_list[i].source);
+      sources.pushBack(incomingList[i].source);
     }
     helpers::sortStrings(sources);
     for (size_t i = 0; i < sources.getSize(); ++i)
     {
-      output_stream << sources[i];
-      for (size_t j = 0; j < incoming_list.getSize(); ++j)
+      outputStream << sources[i];
+      for (size_t j = 0; j < incomingList.getSize(); ++j)
       {
-        if (incoming_list[j].source == sources[i])
+        if (incomingList[j].source == sources[i])
         {
-          helpers::sortWeights(incoming_list[j].weights);
-          for (size_t w = 0; w < incoming_list[j].weights.getSize(); ++w)
+          helpers::sortWeights(incomingList[j].weights);
+          for (size_t w = 0; w < incomingList[j].weights.getSize(); ++w)
           {
-            output_stream << ' ' << incoming_list[j].weights[w];
+            outputStream << ' ' << incomingList[j].weights[w];
           }
           break;
         }
       }
-      output_stream << '\n';
+      outputStream << '\n';
     }
   }
 
-  void commandMerge(std::istream &input_stream, std::ostream &, GraphDatabase &database)
+  void commandMerge(std::istream &inputStream, std::ostream &, GraphDatabase &database)
   {
-    std::string new_name, graph1, graph2;
-    input_stream >> new_name >> graph1 >> graph2;
-    if (database.contains(new_name) || !database.contains(graph1) || !database.contains(graph2))
+    std::string newName;
+    std::string graph1;
+    std::string graph2;
+    inputStream >> newName >> graph1 >> graph2;
+    if (database.contains(newName) || !database.contains(graph1) || !database.contains(graph2))
     {
       throw std::runtime_error("invalid merge");
     }
@@ -324,44 +332,45 @@ namespace burukov
     }
     for (auto it = source1.edges_.cbegin(); it != source1.edges_.cend(); ++it)
     {
-      for (auto weight_it = it->second.cbegin(); weight_it != it->second.cend(); ++weight_it)
+      for (auto weightIt = it->second.cbegin(); weightIt != it->second.cend(); ++weightIt)
       {
-        merged.addEdge(it->first.first, it->first.second, *weight_it);
+        merged.addEdge(it->first.first, it->first.second, *weightIt);
       }
     }
     for (auto it = source2.edges_.cbegin(); it != source2.edges_.cend(); ++it)
     {
-      for (auto weight_it = it->second.cbegin(); weight_it != it->second.cend(); ++weight_it)
+      for (auto weightIt = it->second.cbegin(); weightIt != it->second.cend(); ++weightIt)
       {
-        merged.addEdge(it->first.first, it->first.second, *weight_it);
+        merged.addEdge(it->first.first, it->first.second, *weightIt);
       }
     }
-    database.add(new_name, std::move(merged));
+    database.add(newName, std::move(merged));
   }
 
-  void commandExtract(std::istream &input_stream, std::ostream &, GraphDatabase &database)
+  void commandExtract(std::istream &inputStream, std::ostream &, GraphDatabase &database)
   {
-    std::string new_name, old_name;
-    size_t keep_count;
-    input_stream >> new_name >> old_name >> keep_count;
-    if (database.contains(new_name) || !database.contains(old_name))
+    std::string newName;
+    std::string oldName;
+    size_t keepCount;
+    inputStream >> newName >> oldName >> keepCount;
+    if (database.contains(newName) || !database.contains(oldName))
     {
       throw std::runtime_error("invalid extract");
     }
-    const Graph &source = database.at(old_name);
-    List<std::string> vertices_to_keep;
-    for (size_t i = 0; i < keep_count; ++i)
+    const Graph &source = database.at(oldName);
+    List< std::string > verticesToKeep;
+    for (size_t i = 0; i < keepCount; ++i)
     {
       std::string vertex;
-      input_stream >> vertex;
-      vertices_to_keep.pushFront(vertex);
+      inputStream >> vertex;
+      verticesToKeep.pushFront(vertex);
     }
-    for (auto it = vertices_to_keep.cbegin(); it != vertices_to_keep.cend(); ++it)
+    for (auto it = verticesToKeep.cbegin(); it != verticesToKeep.cend(); ++it)
     {
       bool found = false;
-      for (auto vertex_it = source.vertices_.cbegin(); vertex_it != source.vertices_.cend(); ++vertex_it)
+      for (auto vertexIt = source.vertices_.cbegin(); vertexIt != source.vertices_.cend(); ++vertexIt)
       {
-        if (*vertex_it == *it)
+        if (*vertexIt == *it)
         {
           found = true;
           break;
@@ -373,33 +382,33 @@ namespace burukov
       }
     }
     Graph extracted;
-    for (auto it = vertices_to_keep.cbegin(); it != vertices_to_keep.cend(); ++it)
+    for (auto it = verticesToKeep.cbegin(); it != verticesToKeep.cend(); ++it)
     {
       extracted.addVertex(*it);
     }
     for (auto it = source.edges_.cbegin(); it != source.edges_.cend(); ++it)
     {
-      bool from_ok = false;
-      bool to_ok = false;
-      for (auto keep_it = vertices_to_keep.cbegin(); keep_it != vertices_to_keep.cend(); ++keep_it)
+      bool fromOk = false;
+      bool toOk = false;
+      for (auto keepIt = verticesToKeep.cbegin(); keepIt != verticesToKeep.cend(); ++keepIt)
       {
-        if (*keep_it == it->first.first)
+        if (*keepIt == it->first.first)
         {
-          from_ok = true;
+          fromOk = true;
         }
-        if (*keep_it == it->first.second)
+        if (*keepIt == it->first.second)
         {
-          to_ok = true;
+          toOk = true;
         }
       }
-      if (from_ok && to_ok)
+      if (fromOk && toOk)
       {
-        for (auto weight_it = it->second.cbegin(); weight_it != it->second.cend(); ++weight_it)
+        for (auto weightIt = it->second.cbegin(); weightIt != it->second.cend(); ++weightIt)
         {
-          extracted.addEdge(it->first.first, it->first.second, *weight_it);
+          extracted.addEdge(it->first.first, it->first.second,*weightIt);
         }
       }
     }
-    database.add(new_name, std::move(extracted));
+    database.add(newName, std::move(extracted));
   }
 }
