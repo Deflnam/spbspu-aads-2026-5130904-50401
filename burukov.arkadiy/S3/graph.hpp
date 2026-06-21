@@ -1,7 +1,7 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#include "list.hpp"
+#include <list.hpp>
 #include "hash_table.hpp"
 #include "siphash.hpp"
 #include <string>

@@ -1,7 +1,7 @@
 #ifndef STACK_HPP
 #define STACK_HPP
 
-#include "list.hpp"
+#include <list.hpp>
 
 namespace burukov
 {
@@ -10,6 +10,10 @@ namespace burukov
   {
   public:
     Stack() = default;
+    Stack(const Stack &other) = default;
+    Stack(Stack &&other) noexcept = default;
+    Stack &operator=(const Stack &other) = default;
+    Stack &operator=(Stack &&other) noexcept = default;
 
     T &top();
     const T &top() const;
@@ -21,13 +25,11 @@ namespace burukov
     void push(T &&value);
 
     template< class... Args >
-    void emplace(Args &&...args);
+    void emplace(Args &&... args);
 
     void pop() noexcept;
 
     void swap(Stack &other) noexcept;
-
-    void clear() noexcept;
 
   private:
     List< T > list_;
@@ -49,7 +51,7 @@ const T &burukov::Stack< T >::top() const
 template< class T >
 bool burukov::Stack< T >::empty() const noexcept
 {
-  return list_.size() == 0;
+  return list_.empty();
 }
 
 template< class T >
@@ -67,12 +69,12 @@ void burukov::Stack< T >::push(const T &value)
 template< class T >
 void burukov::Stack< T >::push(T &&value)
 {
-  list_.pushFront(std::move(value));
+  list_.pushFront(std::forward< T >(value));
 }
 
 template< class T >
 template< class... Args >
-void burukov::Stack< T >::emplace(Args &&...args)
+void burukov::Stack< T >::emplace(Args &&... args)
 {
   list_.emplaceFront(std::forward< Args >(args)...);
 }
@@ -87,12 +89,6 @@ template< class T >
 void burukov::Stack< T >::swap(Stack &other) noexcept
 {
   list_.swap(other.list_);
-}
-
-template< class T >
-void burukov::Stack< T >::clear() noexcept
-{
-  list_.clear();
 }
 
 #endif
