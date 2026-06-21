@@ -2,6 +2,7 @@
 #define LIBRARY_HPP
 
 #include "AVLTree.hpp"
+#include "graph.hpp"
 #include <list.hpp>
 #include <string>
 #include <iostream>
@@ -22,7 +23,8 @@ namespace burukov
       isActive_(false)
     {}
 
-    Transaction(const std::string &copyId, const std::string &reader, int startDay):
+    Transaction(const std::string &copyId, const std::string &reader,
+      int startDay):
       copyId_(copyId),
       reader_(reader),
       startDay_(startDay),
@@ -48,7 +50,8 @@ namespace burukov
       lastLendDate_(0)
     {}
 
-    BookData(const std::string &t, const std::string &a, int y, const std::string &g):
+    BookData(const std::string &t, const std::string &a, int y,
+      const std::string &g):
       title_(t),
       author_(a),
       year_(y),
@@ -63,17 +66,43 @@ namespace burukov
   public:
     LibraryManager();
 
-    void addTitle(const std::string &title, const std::string &author, int year, const std::string &genre);
+    void addTitle(const std::string &title, const std::string &author,
+      int year, const std::string &genre);
     void addCopy(const std::string &title, const std::string &copyId);
     void lend(const std::string &title, const std::string &reader);
     void returnCopy(const std::string &copyId);
+    void demandModelTitle(std::ostream &out, const std::string &title,
+      int period) const;
+    void demandModelGenre(std::ostream &out, const std::string &genre,
+      int period) const;
+    void sliceTitle(std::ostream &out, const std::string &title,
+      int period) const;
+    void sliceGenre(std::ostream &out, const std::string &genre,
+      int period) const;
 
   private:
+    struct LoadEvent
+    {
+      int day_;
+      int delta_;
+    };
+
     AVLTree< std::string, BookData > books_;
+    mutable RecommendationGraph graph_;
     int currentDay_;
 
+    void calculateStats(const BookData &book, int period,
+      int &total, double &p95, double &seasonCoef,
+      bool &isSeasonal, bool &isStable) const;
+    double calculateP95(const List< Transaction > &history,
+      int currentDay, int period) const;
+    double calculateSeasonality(const List< Transaction > &history,
+      int currentDay, int period, double &maxCoef) const;
     std::string findTitleByCopy(const std::string &copyId) const;
     bool isCopyLent(const BookData &book, const std::string &copyId) const;
+    void addCoLendRelations(const std::string &title,
+      const std::string &reader);
+    int countCopies(const BookData &book) const;
   };
 }
 
