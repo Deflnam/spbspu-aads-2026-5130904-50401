@@ -13,18 +13,20 @@ namespace burukov
   class Graph
   {
   public:
-    using EdgeKey = std::pair<std::string, std::string>;
-    using WeightList = List<size_t>;
+    using EdgeKey = std::pair< std::string, std::string >;
+    using WeightList = List< size_t >;
 
     Graph() = default;
-    explicit Graph(size_t bucket_hint) : edges_(bucket_hint) {}
+    explicit Graph(size_t bucketHint):
+      edges_(bucketHint)
+    {}
 
-    void addVertex(const std::string &vertex_name);
+    void addVertex(const std::string &vertexName);
     void addEdge(const std::string &from, const std::string &to, size_t weight);
     void removeEdge(const std::string &from, const std::string &to, size_t weight);
 
-    List<std::string> vertices_;
-    HashTable<EdgeKey, WeightList, PairHash, std::equal_to<EdgeKey>> edges_;
+    List< std::string > vertices_;
+    HashTable< EdgeKey, WeightList, PairHash, std::equal_to< EdgeKey > > edges_;
   };
 }
 

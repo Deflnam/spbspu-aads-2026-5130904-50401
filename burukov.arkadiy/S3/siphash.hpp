@@ -10,25 +10,25 @@
 
 namespace burukov
 {
-  template<typename KeyType>
+  template< typename KeyType >
   struct SipHash
   {
-    size_t operator()(const KeyType& key) const
+    size_t operator()(const KeyType &key) const
     {
       boost::hash2::siphash_64 state;
       boost::hash2::hash_append(state, {}, key);
-      return boost::hash2::get_integral_result<size_t>(state);
+      return boost::hash2::get_integral_result< size_t >(state);
     }
   };
 
   struct PairHash
   {
-    size_t operator()(const std::pair<std::string, std::string>& pair) const
+    size_t operator()(const std::pair< std::string, std::string > &pair) const
     {
       boost::hash2::siphash_64 state;
       boost::hash2::hash_append(state, {}, pair.first);
       boost::hash2::hash_append(state, {}, pair.second);
-      return boost::hash2::get_integral_result<size_t>(state);
+      return boost::hash2::get_integral_result< size_t >(state);
     }
   };
 }

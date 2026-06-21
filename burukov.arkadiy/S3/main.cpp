@@ -12,55 +12,53 @@ int main(int argc, char *argv[])
     std::cerr << "Usage: " << argv[0] << " <graph_file>\n";
     return 1;
   }
-
-  std::ifstream input_file(argv[1]);
-  if (!input_file.is_open())
+  std::ifstream inputFile(argv[1]);
+  if (!inputFile.is_open())
   {
     std::cerr << "Cannot open file\n";
     return 1;
   }
-
   burukov::GraphDatabase database(16);
-  std::string graph_name;
-  size_t edge_count;
-  while (input_file >> graph_name >> edge_count)
+  std::string graphName;
+  size_t edgeCount;
+  while (inputFile >> graphName >> edgeCount)
   {
-    burukov::Graph new_graph;
-    for (size_t i = 0; i < edge_count; ++i)
+    burukov::Graph newGraph;
+    for (size_t i = 0; i < edgeCount; ++i)
     {
-      std::string from, to;
+      std::string from;
+      std::string to;
       size_t weight;
-      input_file >> from >> to >> weight;
-      new_graph.addEdge(from, to, weight);
+      inputFile >> from >> to >> weight;
+      newGraph.addEdge(from, to, weight);
     }
-    database.add(graph_name, std::move(new_graph));
+    database.add(graphName, std::move(newGraph));
   }
-  input_file.close();
-
+  inputFile.close();
   using CommandFunction = void (*)(std::istream &, std::ostream &, burukov::GraphDatabase &);
-  burukov::HashTable<std::string, CommandFunction, burukov::SipHash<std::string>, std::equal_to<std::string>> command_table(16);
-  command_table.add("graphs",   burukov::commandGraphs);
-  command_table.add("vertexes", burukov::commandVertexes);
-  command_table.add("outbound", burukov::commandOutbound);
-  command_table.add("inbound",  burukov::commandInbound);
-  command_table.add("bind",     burukov::commandBind);
-  command_table.add("cut",      burukov::commandCut);
-  command_table.add("create",   burukov::commandCreate);
-  command_table.add("merge",    burukov::commandMerge);
-  command_table.add("extract",  burukov::commandExtract);
-
+  burukov::HashTable< std::string, CommandFunction, burukov::SipHash< std::string >, std::equal_to< std::string > > commandTable(16);
+  
+  commandTable.add("graphs",   burukov::commandGraphs);
+  commandTable.add("vertexes", burukov::commandVertexes);
+  commandTable.add("outbound", burukov::commandOutbound);
+  commandTable.add("inbound",  burukov::commandInbound);
+  commandTable.add("bind",     burukov::commandBind);
+  commandTable.add("cut",      burukov::commandCut);
+  commandTable.add("create",   burukov::commandCreate);
+  commandTable.add("merge",    burukov::commandMerge);
+  commandTable.add("extract",  burukov::commandExtract);
   std::string command;
   while (std::cin >> command)
   {
     try
     {
-      command_table.at(command)(std::cin, std::cout, database);
+      commandTable.at(command)(std::cin, std::cout, database);
     }
     catch (const std::exception &)
     {
       std::cout << "<INVALID COMMAND>\n";
       std::cin.clear();
-      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
     }
   }
   return 0;
