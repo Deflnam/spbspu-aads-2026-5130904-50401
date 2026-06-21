@@ -79,6 +79,10 @@ namespace burukov
       int period) const;
     void sliceGenre(std::ostream &out, const std::string &genre,
       int period) const;
+    void recommend(std::ostream &out, const std::string &title,
+      size_t k) const;
+    void deadStock(std::ostream &out, int period, double threshold) const;
+    void demandBalance(std::ostream &out, int period) const;
 
   private:
     struct LoadEvent

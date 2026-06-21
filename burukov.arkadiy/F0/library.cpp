@@ -12,6 +12,7 @@ namespace
   const int kMonthsInYear = 12;
   const int kDaysInMonth = 30;
   const double kMargin = 1.1;
+  const double kTransitiveWeight = 0.5;
   const int kTopBooksForSlice = 3;
   const int kTopPercentThreshold = 70;
   const double kP95Percentile = 0.95;
@@ -415,4 +416,87 @@ void burukov::LibraryManager::sliceGenre(std::ostream &out,
   out << "Top books: " << topPercent << "%\n";
   out << "Diversity: " << (topPercent > kTopPercentThreshold ? "LOW" :
     "HIGH") << "\n";
+}
+
+void burukov::LibraryManager::recommend(std::ostream &out,
+  const std::string &title, size_t k) const
+{
+  if (!books_.hasKey(title)) {
+    throw std::runtime_error("no title");
+  }
+  graph_.calculateScores(kTransitiveWeight);
+  auto recs = graph_.getRecommendations(title, k);
+  if (recs.empty()) {
+    throw std::runtime_error("no recommendations");
+  }
+  int rank = 1;
+  for (auto it = recs.cbegin(); it != recs.cend(); ++it, ++rank) {
+    out << rank << ". " << it->first << "\n";
+  }
+}
+
+void burukov::LibraryManager::deadStock(std::ostream &out, int period,
+  double threshold) const
+{
+  bool found = false;
+  books_.traverseInOrder([&](const std::string &, const BookData &b) {
+    int t = 0;
+    double p95 = 0.0;
+    double sc = 0.0;
+    bool isSeasonal = false;
+    bool isStable = false;
+    calculateStats(b, period, t, p95, sc, isSeasonal, isStable);
+    if (t < threshold && !isSeasonal &&
+      (currentDay_ - b.lastLendDate_ > period / 2)) {
+      out << b.title_ << "\n";
+      found = true;
+    }
+  });
+  if (!found) {
+    out << "<NONE>\n";
+  }
+}
+
+void burukov::LibraryManager::demandBalance(std::ostream &out, int period) const
+{
+  List< std::string > buy;
+  List< std::string > remove;
+  books_.traverseInOrder([&](const std::string &, const BookData &b) {
+    int t = 0;
+    double p95 = 0.0;
+    double sc = 0.0;
+    bool s = false;
+    bool st = false;
+    calculateStats(b, period, t, p95, sc, s, st);
+    int minimal = static_cast< int >(std::ceil(p95 * sc * kMargin));
+    if (minimal < 1 && t > 0) {
+      minimal = 1;
+    }
+    int current = countCopies(b);
+    if (minimal > current) {
+      for (int i = 0; i < minimal - current; ++i) {
+        buy.pushBack(b.title_ + " +1");
+      }
+    } else if (current > minimal && t == 0) {
+      for (int i = 0; i < current - minimal; ++i) {
+        remove.pushBack(b.title_ + " -1");
+      }
+    }
+  });
+  out << "Buy:\n";
+  if (buy.empty()) {
+    out << "<NONE>\n";
+  } else {
+    for (auto it = buy.cbegin(); it != buy.cend(); ++it) {
+      out << *it << "\n";
+    }
+  }
+  out << "Remove:\n";
+  if (remove.empty()) {
+    out << "<NONE>\n";
+  } else {
+    for (auto it = remove.cbegin(); it != remove.cend(); ++it) {
+      out << *it << "\n";
+    }
+  }
 }
