@@ -1,5 +1,4 @@
 #include "library.hpp"
-
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
@@ -25,8 +24,7 @@ burukov::LibraryManager::LibraryManager():
   currentDay_(1)
 {}
 
-std::string burukov::LibraryManager::findTitleByCopy(
-  const std::string& copyId) const
+std::string burukov::LibraryManager::findTitleByCopy(const std::string& copyId) const
 {
   std::string result = "";
   books_.traverseInOrder(
@@ -433,8 +431,7 @@ void burukov::LibraryManager::sliceTitle(std::ostream& out, const std::string& t
   double seasonCoef = 0.0;
   bool isSeasonal = false;
   bool isStable = false;
-  calculateStats(book, period, total, p95, seasonCoef,
-    isSeasonal, isStable);
+  calculateStats(book, period, total, p95, seasonCoef, isSeasonal, isStable);
   if (total == 0)
   {
     throw std::runtime_error("no data");
@@ -479,8 +476,7 @@ void burukov::LibraryManager::sliceGenre(std::ostream& out, const std::string& g
   );
   int topLends = 0;
   int cnt = 0;
-  for (auto it = genreBooks.cbegin();
-    it != genreBooks.cend() && cnt < kTopBooksForSlice; ++it, ++cnt)
+  for (auto it = genreBooks.cbegin(); it != genreBooks.cend() && cnt < kTopBooksForSlice; ++it, ++cnt)
   {
     topLends += it->second;
   }
