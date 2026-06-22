@@ -41,5 +41,6 @@ int main()
       std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
     }
   }
+  commands.clear();
   return 0;
 }

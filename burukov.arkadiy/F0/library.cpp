@@ -516,7 +516,7 @@ void burukov::LibraryManager::deadStock(std::ostream& out, int period, double th
       bool isSeasonal = false;
       bool isStable = false;
       calculateStats(book, period, bt, bp, bs, isSeasonal, isStable);
-      if (bt < threshold && !isSeasonal && (currentDay_ - book.lastLendDate_ > period / 2))
+      if (bt < threshold && !isSeasonal && (bt == 0 || currentDay_ - book.lastLendDate_ > period / 2))
       {
         out << book.title_ << "\n";
         found = true;
