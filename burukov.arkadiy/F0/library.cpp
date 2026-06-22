@@ -319,7 +319,7 @@ double burukov::LibraryManager::calculateSeasonality(const List< Transaction >& 
   return stddev / mean;
 }
 
-void burukov::LibraryManager::calculateStats(const BookData& book, int period, int& total, double& p95, 
+void burukov::LibraryManager::calculateStats(const BookData& book, int period, int& total, double& p95,
   double& seasonCoef, bool& isSeasonal, bool& isStable) const
 {
   total = 0;
