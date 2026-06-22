@@ -35,7 +35,7 @@ namespace burukov
     void addTransitiveEdges(double weight);
   };
 
-  RecommendationGraph::GraphNode* RecommendationGraph::findNode(const std::string& title)
+  inline RecommendationGraph::GraphNode* RecommendationGraph::findNode(const std::string& title)
   {
     for (auto it = nodes_.begin(); it != nodes_.end(); ++it)
     {
@@ -47,7 +47,7 @@ namespace burukov
     return nullptr;
   }
 
-  const RecommendationGraph::GraphNode* RecommendationGraph::findNode(const std::string& title) const
+  inline const RecommendationGraph::GraphNode* RecommendationGraph::findNode(const std::string& title) const
   {
     for (auto it = nodes_.cbegin(); it != nodes_.cend(); ++it)
     {
@@ -59,7 +59,7 @@ namespace burukov
     return nullptr;
   }
 
-  RecommendationGraph::GraphNode& RecommendationGraph::getOrCreateNode(const std::string& title)
+  inline RecommendationGraph::GraphNode& RecommendationGraph::getOrCreateNode(const std::string& title)
   {
     GraphNode* node = findNode(title);
     if (node != nullptr)
@@ -78,7 +78,7 @@ namespace burukov
     return *last;
   }
 
-  void RecommendationGraph::addUndirectedEdge(const std::string& node1, const std::string& node2, double weight)
+  inline void RecommendationGraph::addUndirectedEdge(const std::string& node1, const std::string& node2, double weight)
   {
     GraphNode& nodeA = getOrCreateNode(node1);
     GraphNode& nodeB = getOrCreateNode(node2);
@@ -105,7 +105,7 @@ namespace burukov
     updateEdge(nodeB, node1);
   }
 
-  void RecommendationGraph::addCoLend(const std::string& book1, const std::string& book2, double weight)
+  inline void RecommendationGraph::addCoLend(const std::string& book1, const std::string& book2, double weight)
   {
     if (book1 == book2)
     {
@@ -114,7 +114,7 @@ namespace burukov
     addUndirectedEdge(book1, book2, weight);
   }
 
-  void RecommendationGraph::normalizeDirectEdges()
+  inline void RecommendationGraph::normalizeDirectEdges()
   {
     for (auto itA = nodes_.begin(); itA != nodes_.end(); ++itA)
     {
@@ -130,7 +130,7 @@ namespace burukov
     }
   }
 
-  void RecommendationGraph::addTransitiveEdges(double weight)
+  inline void RecommendationGraph::addTransitiveEdges(double weight)
   {
     for (auto itA = nodes_.begin(); itA != nodes_.end(); ++itA)
     {
@@ -177,13 +177,13 @@ namespace burukov
     }
   }
 
-  void RecommendationGraph::calculateScores(double transitiveWeight)
+  inline void RecommendationGraph::calculateScores(double transitiveWeight)
   {
     normalizeDirectEdges();
     addTransitiveEdges(transitiveWeight);
   }
 
-  List< std::pair< std::string, double > >
+  inline List< std::pair< std::string, double > >
   RecommendationGraph::getRecommendations(const std::string& book, size_t k) const
   {
     List< std::pair< std::string, double > > result;
