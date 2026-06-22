@@ -4,6 +4,7 @@
 #include "AVLTree.hpp"
 #include "graph.hpp"
 #include <list.hpp>
+
 #include <string>
 #include <iostream>
 
@@ -87,8 +88,8 @@ namespace burukov
     mutable RecommendationGraph graph_;
     int currentDay_;
 
-    void calculateStats(const BookData& book, int period, int& total, double& p95, double& seasonCoef,
-      bool& isSeasonal, bool& isStable) const;
+    void calculateStats(const BookData& book, int period, int& total, double& p95, double& seasonCoef, bool& isSeasonal,
+      bool& isStable) const;
     double calculateP95(const List< Transaction >& history, int currentDay, int period) const;
     double calculateSeasonality(const List< Transaction >& history, int currentDay, int period, double& maxCoef) const;
     std::string findTitleByCopy(const std::string& copyId) const;

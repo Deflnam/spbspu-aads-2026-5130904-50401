@@ -38,8 +38,7 @@ std::string burukov::readToken(std::istream& in)
   throw std::runtime_error("unexpected eof");
 }
 
-void burukov::parsingAddTitle(std::istream& in, std::ostream& out,
-  LibraryManager& lib)
+void burukov::parsingAddTitle(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
   std::string title = readToken(in);
   std::string author = readToken(in);
@@ -53,8 +52,7 @@ void burukov::parsingAddTitle(std::istream& in, std::ostream& out,
   out << "<ADDED>\n";
 }
 
-void burukov::parsingAddCopy(std::istream& in, std::ostream& out,
-  LibraryManager& lib)
+void burukov::parsingAddCopy(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
   std::string title = readToken(in);
   std::string copyId = readToken(in);
@@ -62,8 +60,7 @@ void burukov::parsingAddCopy(std::istream& in, std::ostream& out,
   out << "<OK>\n";
 }
 
-void burukov::parsingLend(std::istream& in, std::ostream& out,
-  LibraryManager& lib)
+void burukov::parsingLend(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
   std::string title = readToken(in);
   std::string reader = readToken(in);
@@ -71,16 +68,14 @@ void burukov::parsingLend(std::istream& in, std::ostream& out,
   out << "<ISSUED>\n";
 }
 
-void burukov::parsingReturn(std::istream& in, std::ostream& out,
-  LibraryManager& lib)
+void burukov::parsingReturn(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
   std::string copyId = readToken(in);
   lib.returnCopy(copyId);
   out << "<RETURNED>\n";
 }
 
-void burukov::parsingDemandTitle(std::istream& in, std::ostream& out,
-  LibraryManager& lib)
+void burukov::parsingDemandTitle(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
   std::string title = readToken(in);
   int period = 0;
@@ -91,8 +86,7 @@ void burukov::parsingDemandTitle(std::istream& in, std::ostream& out,
   lib.demandModelTitle(out, title, period);
 }
 
-void burukov::parsingDemandGenre(std::istream& in, std::ostream& out,
-  LibraryManager& lib)
+void burukov::parsingDemandGenre(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
   std::string genre = readToken(in);
   int period = 0;
@@ -103,8 +97,7 @@ void burukov::parsingDemandGenre(std::istream& in, std::ostream& out,
   lib.demandModelGenre(out, genre, period);
 }
 
-void burukov::parsingSliceTitle(std::istream& in, std::ostream& out,
-  LibraryManager& lib)
+void burukov::parsingSliceTitle(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
   std::string title = readToken(in);
   int period = 0;
@@ -115,8 +108,7 @@ void burukov::parsingSliceTitle(std::istream& in, std::ostream& out,
   lib.sliceTitle(out, title, period);
 }
 
-void burukov::parsingSliceGenre(std::istream& in, std::ostream& out,
-  LibraryManager& lib)
+void burukov::parsingSliceGenre(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
   std::string genre = readToken(in);
   int period = 0;
@@ -127,8 +119,7 @@ void burukov::parsingSliceGenre(std::istream& in, std::ostream& out,
   lib.sliceGenre(out, genre, period);
 }
 
-void burukov::parsingRecommend(std::istream& in, std::ostream& out,
-  LibraryManager& lib)
+void burukov::parsingRecommend(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
   std::string title = readToken(in);
   size_t k = 0;
@@ -139,8 +130,7 @@ void burukov::parsingRecommend(std::istream& in, std::ostream& out,
   lib.recommend(out, title, k);
 }
 
-void burukov::parsingDeadStock(std::istream& in, std::ostream& out,
-  LibraryManager& lib)
+void burukov::parsingDeadStock(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
   int period = 0;
   double threshold = 0.0;
@@ -151,8 +141,7 @@ void burukov::parsingDeadStock(std::istream& in, std::ostream& out,
   lib.deadStock(out, period, threshold);
 }
 
-void burukov::parsingDemandBalance(std::istream& in, std::ostream& out,
-  LibraryManager& lib)
+void burukov::parsingDemandBalance(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
   int period = 0;
   if (!(in >> period))

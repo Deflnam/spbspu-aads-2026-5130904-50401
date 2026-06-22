@@ -1,4 +1,5 @@
 #include "library.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
@@ -52,8 +53,7 @@ std::string burukov::LibraryManager::findTitleByCopy(
   return result;
 }
 
-bool burukov::LibraryManager::isCopyLent(const BookData& book,
-  const std::string& copyId) const
+bool burukov::LibraryManager::isCopyLent(const BookData& book, const std::string& copyId) const
 {
   for (auto it = book.history_.begin(); it != book.history_.end(); ++it)
   {
@@ -76,8 +76,7 @@ int burukov::LibraryManager::countCopies(const BookData& book) const
   return count;
 }
 
-void burukov::LibraryManager::addCoLendRelations(const std::string& title,
-  const std::string& reader)
+void burukov::LibraryManager::addCoLendRelations(const std::string& title, const std::string& reader)
 {
   books_.traverseInOrder(
     [&](const std::string& otherTitle, const BookData& otherBook)
@@ -89,15 +88,13 @@ void burukov::LibraryManager::addCoLendRelations(const std::string& title,
       for (auto it = otherBook.history_.cbegin();
         it != otherBook.history_.cend(); ++it)
       {
-        if (it->reader_ == reader
-          && it->startDay_ >= currentDay_ - kRecentDays)
+        if (it->reader_ == reader && it->startDay_ >= currentDay_ - kRecentDays)
         {
           double timeDecay = 1.0;
           int daysDiff = currentDay_ - it->startDay_;
           if (daysDiff > 0)
           {
-            timeDecay = 1.0 / (1.0
-              + static_cast< double >(daysDiff) * kTimeDecayFactor);
+            timeDecay = 1.0 / (1.0 + static_cast< double >(daysDiff) * kTimeDecayFactor);
           }
           graph_.addCoLend(title, otherTitle, timeDecay);
           break;
@@ -107,8 +104,8 @@ void burukov::LibraryManager::addCoLendRelations(const std::string& title,
   );
 }
 
-void burukov::LibraryManager::addTitle(const std::string& title,
-  const std::string& author, int year, const std::string& genre)
+void burukov::LibraryManager::addTitle(const std::string& title, const std::string& author, int year,
+  const std::string& genre)
 {
   if (books_.hasKey(title))
   {
@@ -117,8 +114,7 @@ void burukov::LibraryManager::addTitle(const std::string& title,
   books_.push(title, BookData(title, author, year, genre));
 }
 
-void burukov::LibraryManager::addCopy(const std::string& title,
-  const std::string& copyId)
+void burukov::LibraryManager::addCopy(const std::string& title, const std::string& copyId)
 {
   if (!books_.hasKey(title))
   {
@@ -146,8 +142,7 @@ void burukov::LibraryManager::addCopy(const std::string& title,
   book.copies_.pushBack(copyId);
 }
 
-void burukov::LibraryManager::lend(const std::string& title,
-  const std::string& reader)
+void burukov::LibraryManager::lend(const std::string& title, const std::string& reader)
 {
   if (!books_.hasKey(title))
   {
@@ -199,8 +194,7 @@ void burukov::LibraryManager::returnCopy(const std::string& copyId)
   currentDay_++;
 }
 
-double burukov::LibraryManager::calculateP95(
-  const List< Transaction >& history, int currentDay, int period) const
+double burukov::LibraryManager::calculateP95(const List< Transaction >& history, int currentDay, int period) const
 {
   List< LoadEvent > events;
   int startDay = currentDay - period;
@@ -265,8 +259,7 @@ double burukov::LibraryManager::calculateP95(
     return 0.0;
   }
   loads.sort();
-  size_t idx = static_cast< size_t >(
-    static_cast< double >(loads.size()) * kP95Percentile);
+  size_t idx = static_cast< size_t >(static_cast< double >(loads.size()) * kP95Percentile);
   if (idx >= loads.size())
   {
     idx = loads.size() - 1;
@@ -279,8 +272,7 @@ double burukov::LibraryManager::calculateP95(
   return static_cast< double >(*loadIt);
 }
 
-double burukov::LibraryManager::calculateSeasonality(
-  const List< Transaction >& history, int currentDay, int period,
+double burukov::LibraryManager::calculateSeasonality(const List< Transaction >& history, int currentDay, int period,
   double& maxCoef) const
 {
   int monthlyCounts[kMonthsInYear] = {0};
@@ -288,8 +280,7 @@ double burukov::LibraryManager::calculateSeasonality(
   for (auto it = history.cbegin(); it != history.cend(); ++it)
   {
     int activeStart = std::max(it->startDay_, startDay);
-    int activeEnd = (it->isActive_) ? currentDay
-      : std::min(it->endDay_, currentDay);
+    int activeEnd = (it->isActive_) ? currentDay : std::min(it->endDay_, currentDay);
     if (activeEnd < activeStart)
     {
       continue;
@@ -328,24 +319,21 @@ double burukov::LibraryManager::calculateSeasonality(
   return stddev / mean;
 }
 
-void burukov::LibraryManager::calculateStats(const BookData& book,
-  int period, int& total, double& p95, double& seasonCoef,
-  bool& isSeasonal, bool& isStable) const
+void burukov::LibraryManager::calculateStats(const BookData& book, int period, int& total, double& p95, 
+  double& seasonCoef, bool& isSeasonal, bool& isStable) const
 {
   total = 0;
   int startDay = currentDay_ - period;
   for (auto it = book.history_.cbegin(); it != book.history_.cend(); ++it)
   {
-    if (it->startDay_ >= startDay || it->endDay_ >= startDay
-      || it->endDay_ == 0)
+    if (it->startDay_ >= startDay || it->endDay_ >= startDay || it->endDay_ == 0)
     {
       ++total;
     }
   }
   p95 = calculateP95(book.history_, currentDay_, period);
   seasonCoef = 1.0;
-  double variation = calculateSeasonality(book.history_, currentDay_,
-    period, seasonCoef);
+  double variation = calculateSeasonality(book.history_, currentDay_, period, seasonCoef);
   if (total < kMinDataPoints)
   {
     isSeasonal = false;
@@ -357,8 +345,7 @@ void burukov::LibraryManager::calculateStats(const BookData& book,
   isStable = (variation < kStableVariationThreshold);
 }
 
-void burukov::LibraryManager::demandModelTitle(std::ostream& out,
-  const std::string& title, int period) const
+void burukov::LibraryManager::demandModelTitle(std::ostream& out, const std::string& title, int period) const
 {
   if (!books_.hasKey(title))
   {
@@ -370,14 +357,12 @@ void burukov::LibraryManager::demandModelTitle(std::ostream& out,
   double seasonCoef = 0.0;
   bool isSeasonal = false;
   bool isStable = false;
-  calculateStats(book, period, total, p95, seasonCoef,
-    isSeasonal, isStable);
+  calculateStats(book, period, total, p95, seasonCoef, isSeasonal, isStable);
   if (total == 0)
   {
     throw std::runtime_error("no data");
   }
-  int minimal = static_cast< int >(
-    std::ceil(p95 * seasonCoef * kMargin));
+  int minimal = static_cast< int >(std::ceil(p95 * seasonCoef * kMargin));
   if (minimal < 1)
   {
     minimal = 1;
@@ -385,8 +370,7 @@ void burukov::LibraryManager::demandModelTitle(std::ostream& out,
   int currentCopies = countCopies(book);
   int need = minimal - currentCopies;
   out << "Total: " << total << "\n";
-  out << "Trend: " << (total > kGrowthTrendThreshold ? "GROWING"
-    : "STABLE") << "\n";
+  out << "Trend: " << (total > kGrowthTrendThreshold ? "GROWING" : "STABLE") << "\n";
   out << "Seasonality: " << (isSeasonal ? "HIGH" : "LOW") << "\n";
   out << "Minimal: " << minimal << "\n";
   if (need > 0)
@@ -399,8 +383,7 @@ void burukov::LibraryManager::demandModelTitle(std::ostream& out,
   }
 }
 
-void burukov::LibraryManager::demandModelGenre(std::ostream& out,
-  const std::string& genre, int period) const
+void burukov::LibraryManager::demandModelGenre(std::ostream& out, const std::string& genre, int period) const
 {
   int total = 0;
   double maxPeakLoad = 0.0;
@@ -438,8 +421,7 @@ void burukov::LibraryManager::demandModelGenre(std::ostream& out,
   out << "Minimal: " << minimal << "\n";
 }
 
-void burukov::LibraryManager::sliceTitle(std::ostream& out,
-  const std::string& title, int period) const
+void burukov::LibraryManager::sliceTitle(std::ostream& out, const std::string& title, int period) const
 {
   if (!books_.hasKey(title))
   {
@@ -462,8 +444,7 @@ void burukov::LibraryManager::sliceTitle(std::ostream& out,
   out << "Peak load: " << static_cast< int >(std::ceil(p95)) << "\n";
 }
 
-void burukov::LibraryManager::sliceGenre(std::ostream& out,
-  const std::string& genre, int period) const
+void burukov::LibraryManager::sliceGenre(std::ostream& out, const std::string& genre, int period) const
 {
   int total = 0;
   List< std::pair< std::string, int > > genreBooks;
@@ -491,8 +472,7 @@ void burukov::LibraryManager::sliceGenre(std::ostream& out,
     throw std::runtime_error("no data");
   }
   genreBooks.sort(
-    [](const std::pair< std::string, int >& a,
-      const std::pair< std::string, int >& b)
+    [](const std::pair< std::string, int >& a, const std::pair< std::string, int >& b)
     {
       return a.second > b.second;
     }
@@ -506,12 +486,10 @@ void burukov::LibraryManager::sliceGenre(std::ostream& out,
   }
   int topPercent = (topLends * 100) / total;
   out << "Top books: " << topPercent << "%\n";
-  out << "Diversity: " << (topPercent > kTopPercentThreshold ? "LOW"
-    : "HIGH") << "\n";
+  out << "Diversity: " << (topPercent > kTopPercentThreshold ? "LOW" : "HIGH") << "\n";
 }
 
-void burukov::LibraryManager::recommend(std::ostream& out,
-  const std::string& title, size_t k) const
+void burukov::LibraryManager::recommend(std::ostream& out, const std::string& title, size_t k) const
 {
   if (!books_.hasKey(title))
   {
@@ -530,8 +508,7 @@ void burukov::LibraryManager::recommend(std::ostream& out,
   }
 }
 
-void burukov::LibraryManager::deadStock(std::ostream& out, int period,
-  double threshold) const
+void burukov::LibraryManager::deadStock(std::ostream& out, int period, double threshold) const
 {
   bool found = false;
   books_.traverseInOrder(
@@ -543,8 +520,7 @@ void burukov::LibraryManager::deadStock(std::ostream& out, int period,
       bool isSeasonal = false;
       bool isStable = false;
       calculateStats(book, period, bt, bp, bs, isSeasonal, isStable);
-      if (bt < threshold && !isSeasonal
-        && (currentDay_ - book.lastLendDate_ > period / 2))
+      if (bt < threshold && !isSeasonal && (currentDay_ - book.lastLendDate_ > period / 2))
       {
         out << book.title_ << "\n";
         found = true;
@@ -557,8 +533,7 @@ void burukov::LibraryManager::deadStock(std::ostream& out, int period,
   }
 }
 
-void burukov::LibraryManager::demandBalance(std::ostream& out,
-  int period) const
+void burukov::LibraryManager::demandBalance(std::ostream& out, int period) const
 {
   List< std::string > buyList;
   List< std::string > removeList;

@@ -148,8 +148,7 @@ namespace burukov
   }
 
   template< class Key, class Value, class Compare >
-  void AVLTree< Key, Value, Compare >::copyTree(Node*& dest, Node* src,
-    Node* parent)
+  void AVLTree< Key, Value, Compare >::copyTree(Node*& dest, Node* src, Node* parent)
   {
     if (src == nullptr || src->isNil())
     {
@@ -174,8 +173,7 @@ namespace burukov
     root_->left_ = nilNode_;
     root_->right_ = nilNode_;
     root_->parent_ = nilNode_;
-    if (other.root_ != nullptr && other.root_->right_ != nullptr
-      && !other.root_->right_->isNil())
+    if (other.root_ != nullptr && other.root_->right_ != nullptr && !other.root_->right_->isNil())
     {
       copyTree(root_->right_, other.root_->right_, root_);
     }
@@ -271,8 +269,7 @@ namespace burukov
   typename AVLTree< Key, Value, Compare >::Node*
   AVLTree< Key, Value, Compare >::findNode(const Key& k) const
   {
-    if (root_ == nullptr || root_->right_ == nullptr
-      || root_->right_->isNil())
+    if (root_ == nullptr || root_->right_ == nullptr || root_->right_->isNil())
     {
       return nullptr;
     }
@@ -334,8 +331,7 @@ namespace burukov
   }
 
   template< class Key, class Value, class Compare >
-  typename AVLTree< Key, Value, Compare >::Node*
-  AVLTree< Key, Value, Compare >::rotateRight(Node* y)
+  typename AVLTree< Key, Value, Compare >::Node* AVLTree< Key, Value, Compare >::rotateRight(Node* y)
   {
     Node* x = y->left_;
     Node* t2 = x->right_;
@@ -366,8 +362,7 @@ namespace burukov
   }
 
   template< class Key, class Value, class Compare >
-  typename AVLTree< Key, Value, Compare >::Node*
-  AVLTree< Key, Value, Compare >::rotateLeft(Node* x)
+  typename AVLTree< Key, Value, Compare >::Node* AVLTree< Key, Value, Compare >::rotateLeft(Node* x)
   {
     Node* y = x->right_;
     Node* t2 = y->left_;
@@ -398,8 +393,7 @@ namespace burukov
   }
 
   template< class Key, class Value, class Compare >
-  typename AVLTree< Key, Value, Compare >::Node*
-  AVLTree< Key, Value, Compare >::balance(Node* z)
+  typename AVLTree< Key, Value, Compare >::Node* AVLTree< Key, Value, Compare >::balance(Node* z)
   {
     z->updateHeight();
     int bal = getBalance(z);
@@ -520,8 +514,7 @@ namespace burukov
   }
 
   template< class Key, class Value, class Compare >
-  typename AVLTree< Key, Value, Compare >::Node*
-  AVLTree< Key, Value, Compare >::findMinNode(Node* node) const
+  typename AVLTree< Key, Value, Compare >::Node* AVLTree< Key, Value, Compare >::findMinNode(Node* node) const
   {
     Node* cur = node;
     while (!cur->left_->isNil())

@@ -1,13 +1,12 @@
-#include "commands.hpp"
-#include "AVLTree.hpp"
 #include <iostream>
 #include <string>
 #include <limits>
+#include "AVLTree.hpp"
+#include "commands.hpp"
 
 int main()
 {
-  using CommandFunc = void (*)(std::istream&, std::ostream&,
-    burukov::LibraryManager&);
+  using CommandFunc = void (*)(std::istream&, std::ostream&, burukov::LibraryManager&);
   burukov::AVLTree< std::string, CommandFunc > commands;
   commands.push("add-title", burukov::parsingAddTitle);
   commands.push("add-copy", burukov::parsingAddCopy);
@@ -39,8 +38,7 @@ int main()
     {
       std::cout << "<INVALID COMMAND>\n";
       std::cin.clear();
-      std::cin.ignore(
-        std::numeric_limits< std::streamsize >::max(), '\n');
+      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
     }
   }
   return 0;

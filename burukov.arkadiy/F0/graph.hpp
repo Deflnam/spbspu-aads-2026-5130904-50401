@@ -13,11 +13,9 @@ namespace burukov
   public:
     RecommendationGraph() = default;
 
-    void addCoLend(const std::string& book1, const std::string& book2,
-      double weight = 1.0);
+    void addCoLend(const std::string& book1, const std::string& book2, double weight = 1.0);
     void calculateScores(double transitiveWeight = 0.5);
-    List< std::pair< std::string, double > > getRecommendations(
-      const std::string& book, size_t k) const;
+    List< std::pair< std::string, double > > getRecommendations(const std::string& book, size_t k) const;
 
   private:
     struct GraphNode
@@ -32,14 +30,12 @@ namespace burukov
     GraphNode* findNode(const std::string& title);
     const GraphNode* findNode(const std::string& title) const;
     GraphNode& getOrCreateNode(const std::string& title);
-    void addUndirectedEdge(const std::string& node1,
-      const std::string& node2, double weight);
+    void addUndirectedEdge(const std::string& node1, const std::string& node2, double weight);
     void normalizeDirectEdges();
     void addTransitiveEdges(double weight);
   };
 
-  RecommendationGraph::GraphNode*
-  RecommendationGraph::findNode(const std::string& title)
+  RecommendationGraph::GraphNode* RecommendationGraph::findNode(const std::string& title)
   {
     for (auto it = nodes_.begin(); it != nodes_.end(); ++it)
     {
@@ -51,8 +47,7 @@ namespace burukov
     return nullptr;
   }
 
-  const RecommendationGraph::GraphNode*
-  RecommendationGraph::findNode(const std::string& title) const
+  const RecommendationGraph::GraphNode* RecommendationGraph::findNode(const std::string& title) const
   {
     for (auto it = nodes_.cbegin(); it != nodes_.cend(); ++it)
     {
@@ -64,8 +59,7 @@ namespace burukov
     return nullptr;
   }
 
-  RecommendationGraph::GraphNode&
-  RecommendationGraph::getOrCreateNode(const std::string& title)
+  RecommendationGraph::GraphNode& RecommendationGraph::getOrCreateNode(const std::string& title)
   {
     GraphNode* node = findNode(title);
     if (node != nullptr)
@@ -84,8 +78,7 @@ namespace burukov
     return *last;
   }
 
-  void RecommendationGraph::addUndirectedEdge(
-    const std::string& node1, const std::string& node2, double weight)
+  void RecommendationGraph::addUndirectedEdge(const std::string& node1, const std::string& node2, double weight)
   {
     GraphNode& nodeA = getOrCreateNode(node1);
     GraphNode& nodeB = getOrCreateNode(node2);
@@ -112,8 +105,7 @@ namespace burukov
     updateEdge(nodeB, node1);
   }
 
-  void RecommendationGraph::addCoLend(
-    const std::string& book1, const std::string& book2, double weight)
+  void RecommendationGraph::addCoLend(const std::string& book1, const std::string& book2, double weight)
   {
     if (book1 == book2)
     {
@@ -192,8 +184,7 @@ namespace burukov
   }
 
   List< std::pair< std::string, double > >
-  RecommendationGraph::getRecommendations(
-    const std::string& book, size_t k) const
+  RecommendationGraph::getRecommendations(const std::string& book, size_t k) const
   {
     List< std::pair< std::string, double > > result;
     const GraphNode* node = findNode(book);
@@ -206,8 +197,7 @@ namespace burukov
       result.pushBack(*it);
     }
     result.sort(
-      [](const std::pair< std::string, double >& a,
-        const std::pair< std::string, double >& b)
+      [](const std::pair< std::string, double >& a, const std::pair< std::string, double >& b)
       {
         return a.second > b.second;
       }
