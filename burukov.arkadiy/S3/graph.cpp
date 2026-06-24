@@ -37,17 +37,27 @@ void burukov::Graph::removeEdge(const std::string &from, const std::string &to, 
     throw std::out_of_range("edge not found");
   }
   WeightList &list = edges_.at(key);
-  for (auto it = list.begin(); it != list.end(); ++it)
+  WeightList rebuilt;
+  bool removed = false;
+  for (auto it = list.cbegin(); it != list.cend(); ++it)
   {
-    if (*it == weight)
+    if (!removed && *it == weight)
     {
-      list.erase(it);
-      if (list.empty())
-      {
-        edges_.erase(key);
-      }
-      return;
+      removed = true;
+      continue;
     }
+    rebuilt.pushBack(*it);
   }
-  throw std::out_of_range("weight not found");
+  if (!removed)
+  {
+    throw std::out_of_range("weight not found");
+  }
+  if (rebuilt.empty())
+  {
+    edges_.erase(key);
+  }
+  else
+  {
+    list = std::move(rebuilt);
+  }
 }

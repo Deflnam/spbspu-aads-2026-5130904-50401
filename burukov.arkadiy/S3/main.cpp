@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
   inputFile.close();
   using CommandFunction = void (*)(std::istream &, std::ostream &, burukov::GraphDatabase &);
   burukov::HashTable< std::string, CommandFunction, burukov::SipHash< std::string >, std::equal_to< std::string > > commandTable(16);
-  
+
   commandTable.add("graphs",   burukov::commandGraphs);
   commandTable.add("vertexes", burukov::commandVertexes);
   commandTable.add("outbound", burukov::commandOutbound);
