@@ -52,12 +52,14 @@ namespace burukov
 
     EntryType &operator*() const
     {
-      return *current_position_;
+      LIter<EntryType> it = current_position_;
+      return *it;
     }
 
     EntryType *operator->() const
     {
-      return current_position_.operator->();
+      LIter<EntryType> it = current_position_;
+      return it.operator->();
     }
 
   private:
