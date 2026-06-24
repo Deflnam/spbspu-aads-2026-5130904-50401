@@ -1,11 +1,12 @@
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
-#include <utility>
-#include <stdexcept>
 #include <algorithm>
 #include <cstddef>
 #include <initializer_list>
+#include <stdexcept>
+#include <utility>
+
 #include "viter.hpp"
 
 namespace burukov
