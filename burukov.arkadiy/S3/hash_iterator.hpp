@@ -57,7 +57,7 @@ namespace burukov
 
     EntryType *operator->() const
     {
-      return &(*current_position_);
+      return current_position_.operator->();
     }
 
   private:
@@ -129,7 +129,7 @@ namespace burukov
 
     const EntryType *operator->() const
     {
-      return &(*current_position_);
+      return current_position_.operator->();
     }
 
   private:
