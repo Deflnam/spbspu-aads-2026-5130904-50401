@@ -95,20 +95,20 @@ namespace burukov
     void erase(const KeyType &key)
     {
       size_t index = hasher_(key) % buckets_.getSize();
-      List<EntryType> copy = buckets_[index];
+      List<EntryType> rebuilt;
       bool erased = false;
-      for (auto it = copy.begin(); it != copy.end(); ++it)
+      for (auto it = buckets_[index].cbegin(); it != buckets_[index].cend(); ++it)
       {
-        if (equal_(it->first, key))
+        if (!erased && equal_(it->first, key))
         {
-          copy.erase(it);
           erased = true;
-          break;
+          continue;
         }
+        rebuilt.pushBack(*it);
       }
       if (!erased)
         return;
-      buckets_[index] = std::move(copy);
+      buckets_[index] = std::move(rebuilt);
       --size_;
     }
 
