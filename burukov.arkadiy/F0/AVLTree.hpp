@@ -1,12 +1,12 @@
 #ifndef AVLTREE_HPP
 #define AVLTREE_HPP
 
-#include <list.hpp>
 #include <cstddef>
 #include <functional>
 #include <stdexcept>
 #include <utility>
 #include <algorithm>
+#include <list.hpp>
 
 namespace burukov
 {
@@ -104,6 +104,7 @@ namespace burukov
     Node* rotateLeft(Node* x);
     Node* balance(Node* z);
     Node* findMinNode(Node* node) const;
+    void insertAndBalance(Node* n, Node* parent, const Key& k);
   };
 
   template< class Key, class Value, class Compare >
@@ -158,6 +159,7 @@ namespace burukov
     dest = new Node(src->key_, src->value_, parent);
     copyTree(dest->left_, src->left_, dest);
     copyTree(dest->right_, src->right_, dest);
+    dest->updateHeight();
   }
 
   template< class Key, class Value, class Compare >
@@ -173,7 +175,8 @@ namespace burukov
     root_->left_ = nilNode_;
     root_->right_ = nilNode_;
     root_->parent_ = nilNode_;
-    if (other.root_ != nullptr && other.root_->right_ != nullptr && !other.root_->right_->isNil())
+    if (other.root_ != nullptr && other.root_->right_ != nullptr
+      && !other.root_->right_->isNil())
     {
       copyTree(root_->right_, other.root_->right_, root_);
     }
@@ -331,7 +334,8 @@ namespace burukov
   }
 
   template< class Key, class Value, class Compare >
-  typename AVLTree< Key, Value, Compare >::Node* AVLTree< Key, Value, Compare >::rotateRight(Node* y)
+  typename AVLTree< Key, Value, Compare >::Node*
+  AVLTree< Key, Value, Compare >::rotateRight(Node* y)
   {
     Node* x = y->left_;
     Node* t2 = x->right_;
@@ -362,7 +366,8 @@ namespace burukov
   }
 
   template< class Key, class Value, class Compare >
-  typename AVLTree< Key, Value, Compare >::Node* AVLTree< Key, Value, Compare >::rotateLeft(Node* x)
+  typename AVLTree< Key, Value, Compare >::Node*
+  AVLTree< Key, Value, Compare >::rotateLeft(Node* x)
   {
     Node* y = x->right_;
     Node* t2 = y->left_;
@@ -393,7 +398,8 @@ namespace burukov
   }
 
   template< class Key, class Value, class Compare >
-  typename AVLTree< Key, Value, Compare >::Node* AVLTree< Key, Value, Compare >::balance(Node* z)
+  typename AVLTree< Key, Value, Compare >::Node*
+  AVLTree< Key, Value, Compare >::balance(Node* z)
   {
     z->updateHeight();
     int bal = getBalance(z);
@@ -425,6 +431,30 @@ namespace burukov
   }
 
   template< class Key, class Value, class Compare >
+  void AVLTree< Key, Value, Compare >::insertAndBalance(Node* n, Node* parent, const Key& k)
+  {
+    if (parent == root_)
+    {
+      root_->right_ = n;
+    }
+    else if (comp_(k, parent->key_))
+    {
+      parent->left_ = n;
+    }
+    else
+    {
+      parent->right_ = n;
+    }
+    ++size_;
+    Node* fix = n;
+    while (fix != nullptr && !fix->isNil() && fix != root_)
+    {
+      fix = balance(fix);
+      fix = fix->parent_;
+    }
+  }
+
+  template< class Key, class Value, class Compare >
   void AVLTree< Key, Value, Compare >::push(const Key& k, const Value& v)
   {
     Node* parent = root_;
@@ -447,25 +477,7 @@ namespace burukov
       }
     }
     Node* n = new Node(k, v, parent);
-    if (parent == root_)
-    {
-      root_->right_ = n;
-    }
-    else if (comp_(k, parent->key_))
-    {
-      parent->left_ = n;
-    }
-    else
-    {
-      parent->right_ = n;
-    }
-    ++size_;
-    Node* fix = n;
-    while (fix != nullptr && !fix->isNil() && fix != root_)
-    {
-      fix = balance(fix);
-      fix = fix->parent_;
-    }
+    insertAndBalance(n, parent, k);
   }
 
   template< class Key, class Value, class Compare >
@@ -490,31 +502,14 @@ namespace burukov
         return;
       }
     }
-    Node* n = new Node(std::forward< Key >(k),
-      std::forward< Value >(v), parent);
-    if (parent == root_)
-    {
-      root_->right_ = n;
-    }
-    else if (comp_(k, parent->key_))
-    {
-      parent->left_ = n;
-    }
-    else
-    {
-      parent->right_ = n;
-    }
-    ++size_;
-    Node* fix = n;
-    while (fix != nullptr && !fix->isNil() && fix != root_)
-    {
-      fix = balance(fix);
-      fix = fix->parent_;
-    }
+    Key keyCopy(k);
+    Node* n = new Node(std::forward< Key >(k), std::forward< Value >(v), parent);
+    insertAndBalance(n, parent, keyCopy);
   }
 
   template< class Key, class Value, class Compare >
-  typename AVLTree< Key, Value, Compare >::Node* AVLTree< Key, Value, Compare >::findMinNode(Node* node) const
+  typename AVLTree< Key, Value, Compare >::Node*
+  AVLTree< Key, Value, Compare >::findMinNode(Node* node) const
   {
     Node* cur = node;
     while (!cur->left_->isNil())
@@ -533,8 +528,7 @@ namespace burukov
       throw std::out_of_range("key not found");
     }
     Value res = target->value_;
-    Node* removable = target;
-    Node* child = nullptr;
+    Node* removable = nullptr;
     if (target->left_->isNil() || target->right_->isNil())
     {
       removable = target;
@@ -543,6 +537,7 @@ namespace burukov
     {
       removable = findMinNode(target->right_);
     }
+    Node* child = nullptr;
     if (!removable->left_->isNil())
     {
       child = removable->left_;
@@ -588,8 +583,7 @@ namespace burukov
   template< class Func >
   void AVLTree< Key, Value, Compare >::traverseInOrder(Func f) const
   {
-    if (root_ == nullptr || root_->right_ == nullptr
-      || root_->right_->isNil())
+    if (root_ == nullptr || root_->right_ == nullptr || root_->right_->isNil())
     {
       return;
     }

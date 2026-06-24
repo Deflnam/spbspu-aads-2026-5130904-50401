@@ -1,35 +1,27 @@
-#include <iostream>
-#include <string>
-#include <limits>
-#include "AVLTree.hpp"
 #include "commands.hpp"
+
+#include <iostream>
+#include <limits>
+#include <string>
+
+#include "AVLTree.hpp"
+
 
 int main()
 {
   using CommandFunc = void (*)(std::istream&, std::ostream&, burukov::LibraryManager&);
   burukov::AVLTree< std::string, CommandFunc > commands;
-  std::string addTitle = "add-title";
-  std::string addCopy = "add-copy";
-  std::string lend = "lend";
-  std::string ret = "return";
-  std::string demandTitle = "demand-model-title";
-  std::string demandGenre = "demand-model-genre";
-  std::string sliceTitle = "slice-title";
-  std::string sliceGenre = "slice-genre";
-  std::string recommend = "recommend";
-  std::string deadStock = "dead-stock";
-  std::string demandBalance = "demand-balance";
-  commands.push(addTitle, burukov::parsingAddTitle);
-  commands.push(addCopy, burukov::parsingAddCopy);
-  commands.push(lend, burukov::parsingLend);
-  commands.push(ret, burukov::parsingReturn);
-  commands.push(demandTitle, burukov::parsingDemandTitle);
-  commands.push(demandGenre, burukov::parsingDemandGenre);
-  commands.push(sliceTitle, burukov::parsingSliceTitle);
-  commands.push(sliceGenre, burukov::parsingSliceGenre);
-  commands.push(recommend, burukov::parsingRecommend);
-  commands.push(deadStock, burukov::parsingDeadStock);
-  commands.push(demandBalance, burukov::parsingDemandBalance);
+  commands.push("add-title", burukov::parsingAddTitle);
+  commands.push("add-copy", burukov::parsingAddCopy);
+  commands.push("lend", burukov::parsingLend);
+  commands.push("return", burukov::parsingReturn);
+  commands.push("demand-model-title", burukov::parsingDemandTitle);
+  commands.push("demand-model-genre", burukov::parsingDemandGenre);
+  commands.push("slice-title", burukov::parsingSliceTitle);
+  commands.push("slice-genre", burukov::parsingSliceGenre);
+  commands.push("recommend", burukov::parsingRecommend);
+  commands.push("dead-stock", burukov::parsingDeadStock);
+  commands.push("demand-balance", burukov::parsingDemandBalance);
   burukov::LibraryManager lib;
   std::string cmd;
   while (std::cin >> cmd)

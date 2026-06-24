@@ -40,44 +40,44 @@ std::string burukov::readToken(std::istream& in)
 
 void burukov::parsingAddTitle(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
-  std::string title = readToken(in);
-  std::string author = readToken(in);
+  const std::string title = readToken(in);
+  const std::string author = readToken(in);
   int year = 0;
   if (!(in >> year))
   {
     throw std::runtime_error("invalid year");
   }
-  std::string genre = readToken(in);
+  const std::string genre = readToken(in);
   lib.addTitle(title, author, year, genre);
   out << "<ADDED>\n";
 }
 
 void burukov::parsingAddCopy(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
-  std::string title = readToken(in);
-  std::string copyId = readToken(in);
+  const std::string title = readToken(in);
+  const std::string copyId = readToken(in);
   lib.addCopy(title, copyId);
   out << "<OK>\n";
 }
 
 void burukov::parsingLend(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
-  std::string title = readToken(in);
-  std::string reader = readToken(in);
+  const std::string title = readToken(in);
+  const std::string reader = readToken(in);
   lib.lend(title, reader);
   out << "<ISSUED>\n";
 }
 
 void burukov::parsingReturn(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
-  std::string copyId = readToken(in);
+  const std::string copyId = readToken(in);
   lib.returnCopy(copyId);
   out << "<RETURNED>\n";
 }
 
 void burukov::parsingDemandTitle(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
-  std::string title = readToken(in);
+  const std::string title = readToken(in);
   int period = 0;
   if (!(in >> period))
   {
@@ -88,7 +88,7 @@ void burukov::parsingDemandTitle(std::istream& in, std::ostream& out, LibraryMan
 
 void burukov::parsingDemandGenre(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
-  std::string genre = readToken(in);
+  const std::string genre = readToken(in);
   int period = 0;
   if (!(in >> period))
   {
@@ -99,7 +99,7 @@ void burukov::parsingDemandGenre(std::istream& in, std::ostream& out, LibraryMan
 
 void burukov::parsingSliceTitle(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
-  std::string title = readToken(in);
+  const std::string title = readToken(in);
   int period = 0;
   if (!(in >> period))
   {
@@ -110,7 +110,7 @@ void burukov::parsingSliceTitle(std::istream& in, std::ostream& out, LibraryMana
 
 void burukov::parsingSliceGenre(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
-  std::string genre = readToken(in);
+  const std::string genre = readToken(in);
   int period = 0;
   if (!(in >> period))
   {
@@ -121,7 +121,7 @@ void burukov::parsingSliceGenre(std::istream& in, std::ostream& out, LibraryMana
 
 void burukov::parsingRecommend(std::istream& in, std::ostream& out, LibraryManager& lib)
 {
-  std::string title = readToken(in);
+  const std::string title = readToken(in);
   size_t k = 0;
   if (!(in >> k))
   {

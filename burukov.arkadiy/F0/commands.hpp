@@ -1,9 +1,10 @@
 #ifndef COMMANDS_HPP
 #define COMMANDS_HPP
 
-#include "library.hpp"
 #include <iostream>
 #include <string>
+
+#include "library.hpp"
 
 namespace burukov
 {

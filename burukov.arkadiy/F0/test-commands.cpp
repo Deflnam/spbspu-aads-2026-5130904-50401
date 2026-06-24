@@ -1,8 +1,10 @@
-#include <boost/test/unit_test.hpp>
-#include "commands.hpp"
-#include "library.hpp"
 #include <sstream>
 #include <stdexcept>
+
+#include <boost/test/unit_test.hpp>
+
+#include "commands.hpp"
+#include "library.hpp"
 
 BOOST_AUTO_TEST_SUITE(CommandParsingTests)
 

@@ -1,7 +1,9 @@
-#include <boost/test/unit_test.hpp>
-#include "AVLTree.hpp"
 #include <string>
 #include <stdexcept>
+
+#include <boost/test/unit_test.hpp>
+
+#include "AVLTree.hpp"
 
 BOOST_AUTO_TEST_SUITE(AVLTreeTests)
 

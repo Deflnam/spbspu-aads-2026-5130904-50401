@@ -1,12 +1,12 @@
 #ifndef LIBRARY_HPP
 #define LIBRARY_HPP
 
+#include <iostream>
+#include <string>
+
 #include "AVLTree.hpp"
 #include "graph.hpp"
 #include <list.hpp>
-
-#include <string>
-#include <iostream>
 
 namespace burukov
 {
@@ -84,12 +84,38 @@ namespace burukov
       int delta_;
     };
 
+    struct CoLendEvent
+    {
+      std::string book1_;
+      std::string book2_;
+      double weight_;
+    };
+
+    struct DemandStats
+    {
+      int total_;
+      double p95_;
+      double seasonCoef_;
+      bool isSeasonal_;
+      bool isStable_;
+
+      DemandStats():
+        total_(0),
+        p95_(0.0),
+        seasonCoef_(0.0),
+        isSeasonal_(false),
+        isStable_(false)
+      {}
+    };
+
     AVLTree< std::string, BookData > books_;
     mutable RecommendationGraph graph_;
+    mutable bool graphDirty_;
+    List< CoLendEvent > coLendLog_;
     int currentDay_;
 
-    void calculateStats(const BookData& book, int period, int& total, double& p95, double& seasonCoef, bool& isSeasonal,
-      bool& isStable) const;
+    void rebuildGraph() const;
+    DemandStats calculateStats(const BookData& book, int period) const;
     double calculateP95(const List< Transaction >& history, int currentDay, int period) const;
     double calculateSeasonality(const List< Transaction >& history, int currentDay, int period, double& maxCoef) const;
     std::string findTitleByCopy(const std::string& copyId) const;
