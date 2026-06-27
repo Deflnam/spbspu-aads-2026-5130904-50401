@@ -110,7 +110,7 @@ burukov::Vector<T>::Vector(Vector<T> &&other) noexcept
 
 template<class T>
 burukov::Vector<T>::Vector(size_t size)
-  : data_(size ? static_cast<T *>(operator new(sizeof(T) * size)) : nullptr), 
+  : data_(size ? static_cast<T *>(operator new(sizeof(T) * size)) : nullptr),
     size_(size), capacity_(size) {}
 
 template<class T>
