@@ -9,6 +9,7 @@
 #include "hash_table.hpp"
 #include "graph.hpp"
 #include "siphash.hpp"
+
 namespace burukov
 {
   using GraphDatabase = HashTable< std::string, Graph, SipHash< std::string >, std::equal_to< std::string > >;

@@ -58,6 +58,7 @@ void burukov::commandGraphs(std::istream &, std::ostream &outputStream, GraphDat
   }
   if (names.isEmpty())
   {
+    outputStream << '\n';
     return;
   }
   helpers::sortStrings(names);
@@ -83,6 +84,7 @@ void burukov::commandVertexes(std::istream &inputStream, std::ostream &outputStr
   }
   if (vertices.isEmpty())
   {
+    outputStream << '\n';
     return;
   }
   helpers::sortStrings(vertices);
@@ -196,6 +198,7 @@ void burukov::commandOutbound(std::istream &inputStream, std::ostream &outputStr
   }
   if (outgoingList.isEmpty())
   {
+    outputStream << '\n';
     return;
   }
   Vector< std::string > targets;
@@ -275,6 +278,7 @@ void burukov::commandInbound(std::istream &inputStream, std::ostream &outputStre
   }
   if (incomingList.isEmpty())
   {
+    outputStream << '\n';
     return;
   }
   Vector< std::string > sources;
