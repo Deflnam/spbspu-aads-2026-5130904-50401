@@ -1,6 +1,7 @@
 #ifndef HASH_TABLE_HPP
 #define HASH_TABLE_HPP
 
+#include <cstddef>
 #include <functional>
 #include <stdexcept>
 #include <utility>
@@ -14,6 +15,17 @@
 
 namespace burukov
 {
+  namespace detail
+  {
+    struct DoubleSlots
+    {
+      size_t operator()(size_t before) const
+      {
+        return (before < 10) ? 20 : before * 2;
+      }
+    };
+  }
+
   template< class KeyType, class ValueType, class HashType = SipHash< KeyType >,
             class EqualType = std::equal_to< KeyType > >
   class HashTable
@@ -25,6 +37,7 @@ namespace burukov
     using EntryType = std::pair< const KeyType, ValueType >;
     using Iterator = HashIterator< KeyType, ValueType, HashType, EqualType >;
     using ConstIterator = ConstHashIterator< KeyType, ValueType, HashType, EqualType >;
+    using SlotPolicy = std::function< size_t(size_t) >;
 
     HashTable();
     HashTable(const HashTable &other) = default;
@@ -53,6 +66,16 @@ namespace burukov
     size_t size() const noexcept;
     bool empty() const noexcept;
 
+    double loadFactor() const noexcept;
+    size_t longestChain() const noexcept;
+
+    double maxLoadFactor() const noexcept;
+    void maxLoadFactor(double value);
+    size_t maxChainLength() const noexcept;
+    void maxChainLength(size_t value);
+
+    void slotPolicy(SlotPolicy policy);
+
     Iterator begin() noexcept;
     Iterator end() noexcept;
     ConstIterator begin() const noexcept;
@@ -65,8 +88,12 @@ namespace burukov
     size_t size_;
     HashType hasher_;
     EqualType equal_;
+    double maxLoadFactor_;
+    size_t maxChainLength_;
+    SlotPolicy slotPolicy_;
 
     void allocateBuckets(size_t count);
+    bool exceedsLimits(size_t chainLength) const noexcept;
 
     template< class V >
     void addImpl(const KeyType &key, V &&value);
@@ -81,7 +108,10 @@ namespace burukov
   HashTable< KeyType, ValueType, HashType, EqualType >::HashTable(size_t bucketCount):
     size_(0),
     hasher_(),
-    equal_()
+    equal_(),
+    maxLoadFactor_(0.0),
+    maxChainLength_(0),
+    slotPolicy_(detail::DoubleSlots())
   {
     if (bucketCount == 0)
     {
@@ -97,17 +127,40 @@ namespace burukov
     std::swap(size_, other.size_);
     std::swap(hasher_, other.hasher_);
     std::swap(equal_, other.equal_);
+    std::swap(maxLoadFactor_, other.maxLoadFactor_);
+    std::swap(maxChainLength_, other.maxChainLength_);
+    std::swap(slotPolicy_, other.slotPolicy_);
+  }
+
+  template< class KeyType, class ValueType, class HashType, class EqualType >
+  bool HashTable< KeyType, ValueType, HashType, EqualType >::exceedsLimits(size_t chainLength) const noexcept
+  {
+    if (maxChainLength_ != 0 && chainLength > maxChainLength_)
+    {
+      return true;
+    }
+    if (maxLoadFactor_ > 0.0)
+    {
+      const double factor = static_cast< double >(size_) / static_cast< double >(buckets_.getSize());
+      if (factor > maxLoadFactor_)
+      {
+        return true;
+      }
+    }
+    return false;
   }
 
   template< class KeyType, class ValueType, class HashType, class EqualType >
   template< class V >
   void HashTable< KeyType, ValueType, HashType, EqualType >::addImpl(const KeyType &key, V &&value)
   {
-    size_t index = hasher_(key) % buckets_.getSize();
-    List< EntryType > copy = buckets_[index];
+    const size_t index = hasher_(key) % buckets_.getSize();
+    List< EntryType > chain(buckets_[index]);
+    size_t chainLength = 0;
     bool found = false;
-    for (auto it = copy.begin(); it != copy.end(); ++it)
+    for (auto it = chain.begin(); it != chain.end(); ++it)
     {
+      ++chainLength;
       if (equal_(it->first, key))
       {
         it->second = std::forward< V >(value);
@@ -115,12 +168,19 @@ namespace burukov
         break;
       }
     }
-    if (!found)
+    if (found)
     {
-      copy.pushBack(EntryType(key, std::forward< V >(value)));
-      ++size_;
+      buckets_[index] = std::move(chain);
+      return;
     }
-    buckets_[index] = std::move(copy);
+    chain.pushBack(EntryType(key, std::forward< V >(value)));
+    ++chainLength;
+    buckets_[index] = std::move(chain);
+    ++size_;
+    if (exceedsLimits(chainLength))
+    {
+      rehash(slotPolicy_(buckets_.getSize()));
+    }
   }
 
   template< class KeyType, class ValueType, class HashType, class EqualType >
@@ -138,7 +198,7 @@ namespace burukov
   template< class KeyType, class ValueType, class HashType, class EqualType >
   void HashTable< KeyType, ValueType, HashType, EqualType >::erase(const KeyType &key)
   {
-    size_t index = hasher_(key) % buckets_.getSize();
+    const size_t index = hasher_(key) % buckets_.getSize();
     List< EntryType > rebuilt;
     bool erased = false;
     for (auto it = buckets_[index].cbegin(); it != buckets_[index].cend(); ++it)
@@ -161,7 +221,7 @@ namespace burukov
   template< class KeyType, class ValueType, class HashType, class EqualType >
   ValueType &HashTable< KeyType, ValueType, HashType, EqualType >::at(const KeyType &key)
   {
-    size_t index = hasher_(key) % buckets_.getSize();
+    const size_t index = hasher_(key) % buckets_.getSize();
     for (auto it = buckets_[index].begin(); it != buckets_[index].end(); ++it)
     {
       if (equal_(it->first, key))
@@ -175,7 +235,7 @@ namespace burukov
   template< class KeyType, class ValueType, class HashType, class EqualType >
   const ValueType &HashTable< KeyType, ValueType, HashType, EqualType >::at(const KeyType &key) const
   {
-    size_t index = hasher_(key) % buckets_.getSize();
+    const size_t index = hasher_(key) % buckets_.getSize();
     for (auto it = buckets_[index].cbegin(); it != buckets_[index].cend(); ++it)
     {
       if (equal_(it->first, key))
@@ -189,7 +249,7 @@ namespace burukov
   template< class KeyType, class ValueType, class HashType, class EqualType >
   bool HashTable< KeyType, ValueType, HashType, EqualType >::contains(const KeyType &key) const
   {
-    size_t index = hasher_(key) % buckets_.getSize();
+    const size_t index = hasher_(key) % buckets_.getSize();
     for (auto it = buckets_[index].cbegin(); it != buckets_[index].cend(); ++it)
     {
       if (equal_(it->first, key))
@@ -208,11 +268,16 @@ namespace burukov
       return;
     }
     HashTable fresh(newBucketCount);
+    fresh.maxLoadFactor_ = maxLoadFactor_;
+    fresh.maxChainLength_ = maxChainLength_;
+    fresh.slotPolicy_ = slotPolicy_;
     for (size_t i = 0; i < buckets_.getSize(); ++i)
     {
-      for (auto it = buckets_[i].begin(); it != buckets_[i].end(); ++it)
+      for (auto it = buckets_[i].cbegin(); it != buckets_[i].cend(); ++it)
       {
-        fresh.add(it->first, it->second);
+        const size_t index = fresh.hasher_(it->first) % fresh.buckets_.getSize();
+        fresh.buckets_[index].pushBack(*it);
+        ++fresh.size_;
       }
     }
     swap(fresh);
@@ -238,6 +303,69 @@ namespace burukov
   bool HashTable< KeyType, ValueType, HashType, EqualType >::empty() const noexcept
   {
     return size_ == 0;
+  }
+
+  template< class KeyType, class ValueType, class HashType, class EqualType >
+  double HashTable< KeyType, ValueType, HashType, EqualType >::loadFactor() const noexcept
+  {
+    return static_cast< double >(size_) / static_cast< double >(buckets_.getSize());
+  }
+
+  template< class KeyType, class ValueType, class HashType, class EqualType >
+  size_t HashTable< KeyType, ValueType, HashType, EqualType >::longestChain() const noexcept
+  {
+    size_t longest = 0;
+    for (size_t i = 0; i < buckets_.getSize(); ++i)
+    {
+      size_t current = 0;
+      for (auto it = buckets_[i].cbegin(); it != buckets_[i].cend(); ++it)
+      {
+        ++current;
+      }
+      if (current > longest)
+      {
+        longest = current;
+      }
+    }
+    return longest;
+  }
+
+  template< class KeyType, class ValueType, class HashType, class EqualType >
+  double HashTable< KeyType, ValueType, HashType, EqualType >::maxLoadFactor() const noexcept
+  {
+    return maxLoadFactor_;
+  }
+
+  template< class KeyType, class ValueType, class HashType, class EqualType >
+  void HashTable< KeyType, ValueType, HashType, EqualType >::maxLoadFactor(double value)
+  {
+    if (value < 0.0)
+    {
+      throw std::invalid_argument("negative load factor");
+    }
+    maxLoadFactor_ = value;
+  }
+
+  template< class KeyType, class ValueType, class HashType, class EqualType >
+  size_t HashTable< KeyType, ValueType, HashType, EqualType >::maxChainLength() const noexcept
+  {
+    return maxChainLength_;
+  }
+
+  template< class KeyType, class ValueType, class HashType, class EqualType >
+  void HashTable< KeyType, ValueType, HashType, EqualType >::maxChainLength(size_t value)
+  {
+    maxChainLength_ = value;
+  }
+
+  template< class KeyType, class ValueType, class HashType, class EqualType >
+  void HashTable< KeyType, ValueType, HashType, EqualType >::slotPolicy(SlotPolicy policy)
+  {
+    if (!policy)
+    {
+      throw std::invalid_argument("empty slot policy");
+    }
+    slotPolicy_ = std::move(policy);
   }
 
   template< class KeyType, class ValueType, class HashType, class EqualType >

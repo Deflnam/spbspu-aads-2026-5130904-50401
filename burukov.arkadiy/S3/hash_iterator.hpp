@@ -32,8 +32,8 @@ namespace burukov
     bool operator==(const HashIterator &other) const;
     bool operator!=(const HashIterator &other) const;
 
-    EntryType &operator*() const;
-    EntryType *operator->() const;
+    EntryType &operator*();
+    EntryType *operator->();
 
   private:
     Vector< List< EntryType > > *data_ = nullptr;
@@ -113,14 +113,14 @@ namespace burukov
 
   template< class KeyType, class ValueType, class HashType, class EqualType >
   typename HashIterator< KeyType, ValueType, HashType, EqualType >::EntryType &
-  HashIterator< KeyType, ValueType, HashType, EqualType >::operator*() const
+  HashIterator< KeyType, ValueType, HashType, EqualType >::operator*()
   {
     return *current_position_;
   }
 
   template< class KeyType, class ValueType, class HashType, class EqualType >
   typename HashIterator< KeyType, ValueType, HashType, EqualType >::EntryType *
-  HashIterator< KeyType, ValueType, HashType, EqualType >::operator->() const
+  HashIterator< KeyType, ValueType, HashType, EqualType >::operator->()
   {
     return std::addressof(*current_position_);
   }
