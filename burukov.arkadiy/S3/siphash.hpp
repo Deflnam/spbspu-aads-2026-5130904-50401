@@ -1,16 +1,17 @@
 #ifndef SIPHASH_HPP
 #define SIPHASH_HPP
 
-#include <boost/hash2/siphash.hpp>
-#include <boost/hash2/hash_append.hpp>
-#include <boost/hash2/get_integral_result.hpp>
 #include <cstddef>
 #include <string>
 #include <utility>
 
+#include <boost/hash2/siphash.hpp>
+#include <boost/hash2/hash_append.hpp>
+#include <boost/hash2/get_integral_result.hpp>
+
 namespace burukov
 {
-  template< typename KeyType >
+  template< class KeyType >
   struct SipHash
   {
     size_t operator()(const KeyType &key) const

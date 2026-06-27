@@ -1,42 +1,87 @@
 #include "graph.hpp"
 
+#include <utility>
+#include <stdexcept>
+
+namespace
+{
+  bool listContains(const burukov::Graph::VertexList &list, const std::string &value)
+  {
+    for (auto it = list.cbegin(); it != list.cend(); ++it)
+    {
+      if (*it == value)
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+burukov::Graph::Graph(size_t bucketHint):
+  edges_(bucketHint)
+{}
+
+bool burukov::Graph::hasVertex(const std::string &vertexName) const
+{
+  return listContains(vertices_, vertexName);
+}
+
+const burukov::Graph::VertexList &burukov::Graph::vertices() const noexcept
+{
+  return vertices_;
+}
+
+const burukov::Graph::EdgeTable &burukov::Graph::edges() const noexcept
+{
+  return edges_;
+}
+
 void burukov::Graph::addVertex(const std::string &vertexName)
 {
-  for (auto it = vertices_.begin(); it != vertices_.end(); ++it)
+  if (hasVertex(vertexName))
   {
-    if (*it == vertexName)
-    {
-      return;
-    }
+    return;
   }
   vertices_.pushFront(vertexName);
 }
 
 void burukov::Graph::addEdge(const std::string &from, const std::string &to, size_t weight)
 {
-  addVertex(from);
-  addVertex(to);
-  EdgeKey key(from, to);
-  if (edges_.contains(key))
+  VertexList verticesCopy(vertices_);
+  EdgeTable edgesCopy(edges_);
+  if (!listContains(verticesCopy, from))
   {
-    edges_.at(key).pushFront(weight);
+    verticesCopy.pushFront(from);
+  }
+  if (to != from && !listContains(verticesCopy, to))
+  {
+    verticesCopy.pushFront(to);
+  }
+  const EdgeKey key(from, to);
+  if (edgesCopy.contains(key))
+  {
+    edgesCopy.at(key).pushFront(weight);
   }
   else
   {
     WeightList list;
     list.pushFront(weight);
-    edges_.add(key, list);
+    edgesCopy.add(key, list);
   }
+  vertices_.swap(verticesCopy);
+  edges_.swap(edgesCopy);
 }
 
 void burukov::Graph::removeEdge(const std::string &from, const std::string &to, size_t weight)
 {
-  EdgeKey key(from, to);
+  const EdgeKey key(from, to);
   if (!edges_.contains(key))
   {
     throw std::out_of_range("edge not found");
   }
-  WeightList &list = edges_.at(key);
+  EdgeTable edgesCopy(edges_);
+  WeightList &list = edgesCopy.at(key);
   WeightList rebuilt;
   bool removed = false;
   for (auto it = list.cbegin(); it != list.cend(); ++it)
@@ -54,10 +99,11 @@ void burukov::Graph::removeEdge(const std::string &from, const std::string &to, 
   }
   if (rebuilt.empty())
   {
-    edges_.erase(key);
+    edgesCopy.erase(key);
   }
   else
   {
     list = std::move(rebuilt);
   }
+  edges_.swap(edgesCopy);
 }

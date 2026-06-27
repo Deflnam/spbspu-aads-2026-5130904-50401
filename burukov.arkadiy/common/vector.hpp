@@ -1,12 +1,13 @@
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
-#include <utility>
-#include <stdexcept>
 #include <algorithm>
 #include <cstddef>
 #include <initializer_list>
-#include "viter.hpp"
+#include <stdexcept>
+#include <utility>
+
+#include <viter.hpp>
 
 namespace burukov
 {
@@ -109,7 +110,7 @@ burukov::Vector<T>::Vector(Vector<T> &&other) noexcept
 
 template<class T>
 burukov::Vector<T>::Vector(size_t size)
-  : data_(size ? static_cast<T *>(operator new(sizeof(T) * size)) : nullptr),
+  : data_(size ? static_cast<T *>(operator new(sizeof(T) * size)) : nullptr), 
     size_(size), capacity_(size) {}
 
 template<class T>
@@ -261,8 +262,7 @@ void burukov::Vector<T>::insert(size_t index, const T &value)
 }
 
 template<class T>
-void burukov::Vector<T>::insert(size_t index, const Vector<T> &source,
-                                 size_t start, size_t end)
+void burukov::Vector<T>::insert(size_t index, const Vector<T> &source, size_t start, size_t end)
 {
   if (index > size_)
     throw std::out_of_range("Index out of range");
@@ -547,7 +547,9 @@ void burukov::Vector<T>::pushBackCount(size_t count, const T &value)
   Vector<T> temporary = *this;
   if (temporary.size_ + count > temporary.capacity_)
   {
-    size_t new_capacity = (temporary.capacity_ == 0) ? count : std::max(temporary.size_ + count, temporary.capacity_ * 2);
+    size_t needed = temporary.size_ + count;
+    size_t doubled = temporary.capacity_ * 2;
+    size_t new_capacity = (temporary.capacity_ == 0) ? count : std::max(needed, doubled);
     temporary.grow(new_capacity);
   }
   for (size_t i = 0; i < count; ++i)
@@ -565,7 +567,9 @@ void burukov::Vector<T>::pushBackRange(IT begin, size_t count)
   Vector<T> temporary = *this;
   if (temporary.size_ + count > temporary.capacity_)
   {
-    size_t new_capacity = (temporary.capacity_ == 0) ? count : std::max(temporary.size_ + count, temporary.capacity_ * 2);
+    size_t needed = temporary.size_ + count;
+    size_t doubled = temporary.capacity_ * 2;
+    size_t new_capacity = (temporary.capacity_ == 0) ? count : std::max(needed, doubled);
     temporary.grow(new_capacity);
   }
   for (size_t i = 0; i < count; ++i)
